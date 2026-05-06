@@ -1,4 +1,4 @@
-const API = 'https://claude-production-8714.up.railway.app';
+const API = 'https://claude-production-0b03.up.railway.app';
 let cart = [];
 let products = [];
 let activeCategory = 'hammasi';
