@@ -3,217 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Mening Kafem</title>
+<title>Rahmat Chef — Sweet Pastry</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<div class="header" id="header">
-  <div class="header-top">
-    <div class="logo">
-      <div class="logo-img">🍽️</div>
-      <div>
-        <div class="logo-name">Mening Kafem</div>
-        <div class="logo-sub">📍 Toshkent, Uzbekiston</div>
-      </div>
-    </div>
-    <button class="cart-btn" onclick="openCart()">
-      <span>🛒</span>
-      <span class="cart-count" id="cartCount">0</span>
-    </button>
-  </div>
-  <div class="search-wrap">
-    <span class="search-icon">🔍</span>
-    <input type="text" placeholder="Taom qidirish..." id="searchInput" oninput="filterProducts()">
-  </div>
-  <div class="categories" id="categories"></div>
-</div>
-
-<div class="main" id="main">
-  <div class="banner">
-    <div class="banner-text">
-      <h2>Mazali taomlar 🔥</h2>
-      <p>Tez va qulay yetkazib berish</p>
-    </div>
-    <div class="banner-emoji">🍜</div>
-  </div>
-  <div class="section-title">Barcha taomlar</div>
-  <div class="products-grid" id="productsGrid">
-    <div class="loading"><div class="spinner"></div><p>Yuklanmoqda...</p></div>
-  </div>
-</div>
-
-<div class="overlay" id="overlay" onclick="closeCart()"></div>
-
-<div class="cart-modal" id="cartModal">
-  <div class="modal-handle"></div>
-  <div class="cart-header">
-    <h2>🛒 Savatcha</h2>
-    <button class="close-btn" onclick="closeCart()">✕</button>
-  </div>
-  <div class="cart-items" id="cartItems"></div>
-  <div class="cart-footer" id="cartFooter"></div>
-</div>
-
-<div class="order-modal" id="orderModal">
-  <div class="order-header">
-    <button class="back-btn" onclick="closeOrder()">←</button>
-    <h2>Buyurtma berish</h2>
-  </div>
-  <div class="order-body">
-    <div class="form-group">
-      <label>Ismingiz</label>
-      <input type="text" placeholder="Ism Familiya" id="orderName">
-    </div>
-    <div class="form-group">
-      <label>Telefon</label>
-      <input type="tel" placeholder="+998 90 123 45 67" id="orderPhone">
-    </div>
-    <div class="form-group">
-      <label>Manzil (ixtiyoriy)</label>
-      <input type="text" placeholder="Ko'cha, uy raqami" id="orderAddress">
-    </div>
-    <div class="order-summary" id="orderSummary"></div>
-    <button class="order-btn" onclick="submitOrder()">✅ Buyurtma berish</button>
-  </div>
-</div>
-
-<div class="success-modal" id="successModal">
-  <div class="success-box">
-    <div class="success-anim">✅</div>
-    <h2>Buyurtma qabul qilindi!</h2>
-    <p>Tez orada siz bilan bog'lanamiz 📞</p>
-    <button onclick="closeSuccess()">Davom etish</button>
-  </div>
-</div>
-
-<script>
-const API = 'https://claude-production-0b03.up.railway.app';
-let cart = [];
-let products = [];
-let activeCategory = 'hammasi';
-
-async function loadProducts() {
-  try {
-    const res = await fetch(`${API}/api/products`);
-    products = await res.json();
-    if (!Array.isArray(products)) throw new Error();
-    renderCategories();
-    renderProducts(products);
-  } catch(e) {
-    document.getElementById('productsGrid').innerHTML = '<div class="loading"><p>❌ Xatolik: ' + e.message + '</p></div>';
-  }
-}
-
-function renderCategories() {
-  const cats = ['hammasi', ...new Set(products.map(p => p.category))];
-  document.getElementById('categories').innerHTML = cats.map(cat => `<button class="cat-btn ${cat === activeCategory ? 'active' : ''}" onclick="filterByCategory('${cat}')">${cat === 'hammasi' ? '🍽️ Hammasi' : cat.charAt(0).toUpperCase() + cat.slice(1)}</button>`).join('');
-}
-
-function filterByCategory(cat) {
-  activeCategory = cat;
-  renderCategories();
-  renderProducts(cat === 'hammasi' ? products : products.filter(p => p.category === cat));
-}
-
-function filterProducts() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  renderProducts(products.filter(p => p.name.toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q)));
-}
-
-function renderProducts(list) {
-  if (!list.length) {
-    document.getElementById('productsGrid').innerHTML = '<div class="loading"><p>😔 Mahsulot topilmadi</p></div>';
-    return;
-  }
-  document.getElementById('productsGrid').innerHTML = list.map(p => `<div class="product-card">${p.image ? `<img class="product-img" src="${p.image}" alt="${p.name}" onerror="this.outerHTML='<div class=\\'product-img-placeholder\\'>🍽️</div>'">` : '<div class="product-img-placeholder">🍽️</div>'}<div class="product-info"><div class="product-name">${p.name}</div>${p.description ? `<div class="product-desc">${p.description}</div>` : ''}<div class="product-bottom"><div class="product-price">${Number(p.price).toLocaleString()} so'm</div><button class="add-btn" onclick="addToCart(${p.id})">+</button></div></div></div>`).join('');
-}
-
-function addToCart(id) {
-  const product = products.find(p => p.id === id);
-  const existing = cart.find(c => c.id === id);
-  if (existing) existing.quantity++;
-  else cart.push({...product, quantity: 1});
-  updateCartCount();
-  showAddFeedback(id);
-}
-
-function showAddFeedback(id) {
-  document.querySelectorAll('.add-btn').forEach(btn => {
-    if (btn.getAttribute('onclick') === `addToCart(${id})`) {
-      btn.textContent = '✓'; btn.style.background = '#22c55e';
-      setTimeout(() => { btn.textContent = '+'; btn.style.background = '#ff6b35'; }, 600);
-    }
-  });
-}
-
-function updateCartCount() {
-  document.getElementById('cartCount').textContent = cart.reduce((sum, c) => sum + c.quantity, 0);
-}
-
-function openCart() {
-  document.getElementById('cartModal').classList.add('open');
-  document.getElementById('overlay').classList.add('open');
-  renderCart();
-}
-
-function closeCart() {
-  document.getElementById('cartModal').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-}
-
-function renderCart() {
-  if (!cart.length) {
-    document.getElementById('cartItems').innerHTML = '<div class="empty-cart"><div>🛒</div>Savatcha bo\'sh</div>';
-    document.getElementById('cartFooter').innerHTML = '';
-    return;
-  }
-  document.getElementById('cartItems').innerHTML = cart.map(item => `<div class="cart-item"><div class="cart-item-img">${item.image ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : '🍽️'}</div><div class="cart-item-info"><div class="cart-item-name">${item.name}</div><div class="cart-item-price">${(Number(item.price) * item.quantity).toLocaleString()} so'm</div></div><div class="qty-wrap"><button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button><span class="qty-num">${item.quantity}</span><button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button></div></div>`).join('');
-  const total = cart.reduce((sum, c) => sum + c.price * c.quantity, 0);
-  document.getElementById('cartFooter').innerHTML = `<div class="cart-total"><span>Jami to'lov:</span><span>${total.toLocaleString()} so'm</span></div><button class="checkout-btn" onclick="openOrder()">Buyurtma berish →</button>`;
-}
-
-function changeQty(id, delta) {
-  const item = cart.find(c => c.id === id);
-  if (!item) return;
-  item.quantity += delta;
-  if (item.quantity <= 0) cart = cart.filter(c => c.id !== id);
-  updateCartCount();
-  renderCart();
-}
-
-function openOrder() {
-  closeCart();
-  const total = cart.reduce((sum, c) => sum + c.price * c.quantity, 0);
-  document.getElementById('orderSummary').innerHTML = `<div class="order-summary-title">📋 Buyurtma tarkibi</div>${cart.map(item => `<div class="order-summary-item"><span>${item.name} × ${item.quantity}</span><span>${(item.price * item.quantity).toLocaleString()} so'm</span></div>`).join('')}<div class="order-summary-total"><span>Jami:</span><span>${total.toLocaleString()} so'm</span></div>`;
-  document.getElementById('orderModal').classList.add('open');
-}
-
-function closeOrder() {
-  document.getElementById('orderModal').classList.remove('open');
-}
-
-async function submitOrder() {
-  const name = document.getElementById('orderName').value.trim();
-  const phone = document.getElementById('orderPhone').value.trim();
-  const address = document.getElementById('orderAddress').value.trim();
-  if (!name || !phone) { alert('Ism va telefon raqamini kiriting!'); return; }
-  const btn = document.querySelector('.order-btn');
-  btn.textContent = 'Yuborilmoqda...'; btn.disabled = true;
-  try {
-    const res = await fetch(`${API}/api/orders`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customerName:name,phone,address,items:cart.map(c=>({productId:c.id,quantity:c.quantity,price:c.price}))})});
-    if (res.ok) { cart=[]; updateCartCount(); closeOrder(); document.getElementById('successModal').classList.add('open'); }
-  } catch { alert('Xatolik!'); }
-  btn.textContent = '✅ Buyurtma berish'; btn.disabled = false;
-}
-
-function closeSuccess() {
-  document.getElementById('successModal').classList.remove('open');
-}
-
-loadProducts();
-</script>
-
-</body>
-</html>
+<style>
+:root{--primary:#1a6b5a;--primary2:#15584a;--accent:#2d9b7f;--light:#e8f5f1;--orange:#f4a623;--white:#ffffff;--bg:#f8f8f8;--text:#1a1a1a;--muted:#888;--border:#eee;--radius:16px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh}
+.header{background:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:40;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-img{width:46px;height:46px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.logo-img img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.logo-name{font-weight:900;font-size:1rem;color:var(--text)}
+.logo-sub{font-size:0.72rem;color:var(--primary);font-weight:600}
+.cart-btn{background:var(--primary);border:none;padding:10px 18px;border-radius:24px;display:flex;align-items:center;gap:8px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;color:#fff}
+.cart-count{background:#fff;color:var(--primary);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900}
+.search-wrap{display:flex;align-items:center;gap:10px;background:#f5f5f5;border-radius:14px;padding:11px 14px;margin-bottom:12px;border:1.5px solid transparent;transition:all 0.2s}
+.search-wrap:focus-within{background:#fff;border-color:var(--primary)}
+.search-wrap input{border:none;background:transparent;flex:1;font-family:'Nunito',sans-serif;font-size:0.9rem;color:var(--text);outline:none}
+.search-wrap input::placeholder{color:#bbb}
+.categories{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;scrollbar-width:none}
+.categories::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;padding:8px 18px;border-radius:24px;border:1.5px solid var(--border);background:#fff;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s;color:#555}
+.cat-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.main{padding:16px}
+.banner{background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:20px;padding:20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;overflow:hidden;position:relative}
+.banner::before{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,0.1);border-radius:50%}
+.banner-text​​​​​​​​​​​​​​​​
