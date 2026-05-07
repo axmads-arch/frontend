@@ -7,30 +7,29 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,sans-serif;background:#f5f5f5;max-width:480px;margin:0 auto}
-.header{background:#ff6b35;padding:16px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.header{background:#1a6b5a;padding:16px;color:#fff;display:flex;justify-content:space-between;align-items:center}
 .header h1{font-size:1.1rem;font-weight:800}
 .logout{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem}
 .tabs{display:flex;background:#fff;border-bottom:2px solid #f0f0f0}
 .tab{flex:1;padding:14px;text-align:center;border:none;background:none;font-size:0.88rem;font-weight:700;color:#999;cursor:pointer}
-.tab.active{color:#ff6b35;border-bottom:2px solid #ff6b35}
+.tab.active{color:#1a6b5a;border-bottom:2px solid #1a6b5a}
 .content{padding:16px}
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .card h3{font-size:0.95rem;margin-bottom:12px;color:#1a1a1a}
 input,select,textarea{width:100%;padding:10px 14px;border:1.5px solid #eee;border-radius:10px;font-size:0.88rem;margin-bottom:10px;outline:none;font-family:inherit}
-input:focus,select:focus{border-color:#ff6b35}
-.btn{width:100%;padding:13px;background:#ff6b35;color:#fff;border:none;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer}
-.btn-red{background:#ef4444}
-.btn-green{background:#22c55e}
-.product-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f0f0}
+input:focus,select:focus{border-color:#1a6b5a}
+.btn{width:100%;padding:13px;background:#1a6b5a;color:#fff;border:none;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer}
+.product-item{padding:12px 0;border-bottom:1px solid #f0f0f0}
 .product-item:last-child{border-bottom:none}
+.product-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .product-name{font-weight:700;font-size:0.88rem}
-.product-price{color:#ff6b35;font-size:0.85rem;font-weight:700}
-.product-cat{color:#999;font-size:0.78rem}
+.product-price{color:#1a6b5a;font-size:0.85rem;font-weight:700}
+.product-cat{color:#999;font-size:0.78rem;margin-bottom:6px}
 .item-btns{display:flex;gap:6px}
 .item-btn{padding:6px 12px;border:none;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer}
 .del-btn{background:#fee2e2;color:#ef4444}
+.edit-btn{background:#e8f5f1;color:#1a6b5a}
 .order-item{padding:12px 0;border-bottom:1px solid #f0f0f0}
-.order-item:last-child{border-bottom:none}
 .order-top{display:flex;justify-content:space-between;margin-bottom:4px}
 .order-name{font-weight:700;font-size:0.88rem}
 .order-status{padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:700}
@@ -38,17 +37,19 @@ input:focus,select:focus{border-color:#ff6b35}
 .status-tayyor{background:#d1fae5;color:#059669}
 .status-yetkazildi{background:#dbeafe;color:#2563eb}
 .order-phone{color:#999;font-size:0.82rem}
-.order-total{color:#ff6b35;font-weight:800;font-size:0.88rem}
+.order-total{color:#1a6b5a;font-weight:800;font-size:0.88rem}
 select.status-select{margin:8px 0 0;padding:6px;font-size:0.82rem;width:auto}
 .login-box{padding:32px 16px}
 .login-box h2{text-align:center;margin-bottom:24px;color:#1a1a1a}
 .msg{text-align:center;padding:10px;border-radius:8px;margin-bottom:12px;font-size:0.85rem}
 .msg.error{background:#fee2e2;color:#ef4444}
-.msg.success{background:#d1fae5;color:#059669}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .stat{background:#fff;border-radius:14px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-.stat-num{font-size:1.8rem;font-weight:900;color:#ff6b35}
+.stat-num{font-size:1.8rem;font-weight:900;color:#1a6b5a}
 .stat-label{font-size:0.78rem;color:#999;margin-top:4px}
+.edit-form{background:#f0faf6;border-radius:12px;padding:12px;margin-top:8px;display:none}
+.edit-form input{margin-bottom:8px}
+.save-btn{background:#1a6b5a;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;width:100%}
 </style>
 </head>
 <body>
@@ -70,9 +71,9 @@ select.status-select{margin:8px 0 0;padding:6px;font-size:0.82rem;width:auto}
     <button class="logout" onclick="logout()">Chiqish</button>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="showTab('products')">Mahsulotlar</button>
-    <button class="tab" onclick="showTab('add')">Qo'shish</button>
-    <button class="tab" onclick="showTab('orders')">Buyurtmalar</button>
+    <button class="tab active" onclick="showTab('products', this)">Mahsulotlar</button>
+    <button class="tab" onclick="showTab('add', this)">Qo'shish</button>
+    <button class="tab" onclick="showTab('orders', this)">Buyurtmalar</button>
   </div>
 
   <div id="tab-products" class="content">
@@ -93,7 +94,7 @@ select.status-select{margin:8px 0 0;padding:6px;font-size:0.82rem;width:auto}
       <input id="pDesc" placeholder="Tavsif (ixtiyoriy)">
       <input id="pPrice" type="number" placeholder="Narx (so'm)">
       <input id="pImage" placeholder="Rasm URL (ixtiyoriy)">
-      <input id="pCategory" placeholder="Kategoriya (masalan: lavash, pizza)">
+      <input id="pCategory" placeholder="Kategoriya">
       <button class="btn" onclick="addProduct()">➕ Qo'shish</button>
       <div id="addMsg" style="margin-top:10px;text-align:center;font-size:0.85rem"></div>
     </div>
@@ -110,7 +111,6 @@ select.status-select{margin:8px 0 0;padding:6px;font-size:0.82rem;width:auto}
 <script>
 const API = 'https://claude-production-0b03.up.railway.app';
 let token = localStorage.getItem('adminToken');
-
 if(token) showAdmin();
 
 async function login(){
@@ -143,11 +143,11 @@ function showAdmin(){
   loadOrders();
 }
 
-function showTab(tab){
+function showTab(tab, el){
   document.querySelectorAll('.content').forEach(c=>c.style.display='none');
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(`tab-${tab}`).style.display='block';
-  event.target.classList.add('active');
+  el.classList.add('active');
 }
 
 async function loadProducts(){
@@ -155,17 +155,43 @@ async function loadProducts(){
   const products = await r.json();
   document.getElementById('statProducts').textContent = products.length;
   document.getElementById('productsList').innerHTML = products.length ? products.map(p=>`
-    <div class="product-item">
-      <div>
-        <div class="product-name">${p.name}</div>
-        <div class="product-cat">${p.category}</div>
-        <div class="product-price">${Number(p.price).toLocaleString()} so'm</div>
+    <div class="product-item" id="product-${p.id}">
+      <div class="product-top">
+        <div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-cat">${p.category}</div>
+          <div class="product-price">${Number(p.price).toLocaleString()} so'm</div>
+        </div>
+        <div class="item-btns">
+          <button class="item-btn edit-btn" onclick="toggleEdit(${p.id})">✏️</button>
+          <button class="item-btn del-btn" onclick="deleteProduct(${p.id})">🗑️</button>
+        </div>
       </div>
-      <div class="item-btns">
-        <button class="item-btn del-btn" onclick="deleteProduct(${p.id})">O'chir</button>
+      <div class="edit-form" id="edit-${p.id}">
+        <input id="eName-${p.id}" value="${p.name}" placeholder="Nom">
+        <input id="eDesc-${p.id}" value="${p.description||''}" placeholder="Tavsif">
+        <input id="ePrice-${p.id}" type="number" value="${p.price}" placeholder="Narx">
+        <input id="eImage-${p.id}" value="${p.image||''}" placeholder="Rasm URL">
+        <input id="eCat-${p.id}" value="${p.category}" placeholder="Kategoriya">
+        <button class="save-btn" onclick="saveProduct(${p.id})">💾 Saqlash</button>
       </div>
     </div>
   `).join('') : '<p style="color:#999;text-align:center;padding:20px">Mahsulot yo\'q</p>';
+}
+
+function toggleEdit(id){
+  const form = document.getElementById(`edit-${id}`);
+  form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+async function saveProduct(id){
+  const name = document.getElementById(`eName-${id}`).value;
+  const description = document.getElementById(`eDesc-${id}`).value;
+  const price = document.getElementById(`ePrice-${id}`).value;
+  const image = document.getElementById(`eImage-${id}`).value;
+  const category = document.getElementById(`eCat-${id}`).value;
+  await fetch(`${API}/api/products/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({name,description,price:Number(price),image,category})});
+  loadProducts();
 }
 
 async function addProduct(){
@@ -203,7 +229,7 @@ async function loadOrders(){
       <div class="order-item">
         <div class="order-top">
           <span class="order-name">${o.customerName}</span>
-          <span class="order-status status-${o.status}">${o.status}</span>
+          <span class="order-status status-yangi">${o.status}</span>
         </div>
         <div class="order-phone">📞 ${o.phone}</div>
         ${o.address?`<div class="order-phone">📍 ${o.address}</div>`:''}
