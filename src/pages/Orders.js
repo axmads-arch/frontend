@@ -1,84 +1,62 @@
-import React, { useState, useEffect } from 'react';
+const express = require('express');
+const router = express.Router();
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-export default function Orders({ setPage, API }) {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const phone = localStorage.getItem('userPhone');
+const TELEGRAM_TOKEN = '8743223478:AAHuWX3CfWwfE8Vz7C8eHppkU2bcphZ2NEE';
+const CHAT_ID = '-5192922233';
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
-  async function loadOrders() {
-    if (!phone) { setLoading(false); return; }
-    try {
-      const res = await fetch(`${API}/api/orders/my/${phone}`);
-      const data = await res.json();
-      if (Array.isArray(data)) setOrders(data);
-    } catch(e) {}
-    setLoading(false);
-  }
-
-  const statusColor = {
-    yangi: '#d97706',
-    tayyorlanmoqda: '#2563eb',
-    tayyor: '#059669',
-    yetkazilmoqda: '#7c3aed',
-    yetkazildi: '#059669'
-  };
-
-  if (!phone) {
-    return (
-      <div>
-        <div className="page-header">
-          <h2>📋 Buyurtmalar</h2>
-        </div>
-        <div className="empty-state">
-          <div className="icon">📋</div>
-          <p>Buyurtmalarni ko'rish uchun profilga kiring</p>
-          <button className="order-btn" style={{marginTop:'20px'}} onClick={() => setPage('profile')}>
-            👤 Profilga o'tish
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="page-header">
-        <h2>📋 Buyurtmalar</h2>
-      </div>
-      <div className="page">
-        {loading ? (
-          <div className="empty-state"><p>Yuklanmoqda...</p></div>
-        ) : orders.length === 0 ? (
-          <div className="empty-state">
-            <div className="icon">📋</div>
-            <p>Buyurtmalar yo'q</p>
-          </div>
-        ) : (
-          orders.map(o => (
-            <div key={o.id} style={{background:'#fff',borderRadius:'16px',padding:'16px',marginBottom:'12px',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}>
-              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px'}}>
-                <span style={{fontWeight:800}}>Buyurtma #{o.id}</span>
-                <span style={{background:'#f0faf6',color:statusColor[o.status]||'#888',padding:'4px 10px',borderRadius:'20px',fontSize:'0.78rem',fontWeight:700}}>
-                  {o.status}
-                </span>
-              </div>
-              <div style={{fontSize:'0.82rem',color:'#888',marginBottom:'4px'}}>
-                📍 {o.address}
-              </div>
-              <div style={{fontWeight:900,color:'#1a6b5a',fontSize:'0.95rem'}}>
-                {Number(o.total).toLocaleString()} so'm
-              </div>
-              <div style={{fontSize:'0.75rem',color:'#bbb',marginTop:'4px'}}>
-                {new Date(o.createdAt).toLocaleDateString('uz-UZ')}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
+async function sendTelegram(order) {
+  const items = order.items.map(i => `• ${i.quantity}x — ${Number(i.price).toLocaleString()} so'm`).join('\n');
+  const text = `🛒 *YANGI BUYURTMA #${order.id}*\n\n👤 *Ism:* ${order.customerName}\n📞 *Telefon:* ${order.phone}\n📍 *Manzil:* ${order.address}\n\n*Mahsulotlar:*\n${items}\n\n💰 *Jami: ${Number(order.total).toLocaleString()} so'm*`;
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'Markdown' })
+    });
+  } catch(e) { console.log('Telegram xatolik:', e.message); }
 }
+
+router.post('/', async (req, res) => {
+  try {
+    const { customerName, phone, address, items } = req.body;
+    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const order = await prisma.order.create({
+      data: {
+        customerName, phone, address, total,
+        items: { create: items.map(item => ({ productId: item.productId, quantity: item.quantity, price: item.price })) }
+      },
+      include: { items: true }
+    });
+    await sendTelegram(order);
+    res.json(order);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/my/:phone', async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({
+      where: { phone: req.params.phone },
+      include: { items: { include: { product: true } } },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(orders);
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/', async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({ include: { items: { include: { product: true } } }, orderBy: { createdAt: 'desc' } });
+    res.json(orders);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/:id/status', async (req, res) => {
+  try {
+    const order = await prisma.order.update({ where: { id: Number(req.params.id) }, data: { status: req.body.status } });
+    res.json(order);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+module.exports = router;
