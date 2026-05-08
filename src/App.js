@@ -11,6 +11,7 @@ export default function App() {
   const [page, setPage] = useState('home');
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [banner, setBanner] = useState({
     title: 'Yangi mahsulotlar! 🎉',
     subtitle: 'Har kuni yangi va mazali taomlar',
@@ -28,6 +29,7 @@ export default function App() {
       const data = await res.json();
       if (Array.isArray(data)) setProducts(data);
     } catch(e) {}
+    setLoading(false);
   }
 
   async function loadBanner() {
@@ -71,6 +73,7 @@ export default function App() {
           cartTotal={cartTotal}
           setPage={setPage}
           API={API}
+          loading={loading}
         />
       )}
       {page === 'cart' && (
