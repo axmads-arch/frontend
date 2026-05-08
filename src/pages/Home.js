@@ -11,7 +11,7 @@ function SkeletonCard() {
   );
 }
 
-export default function Home({ products, banner, cart, addToCart, cartTotal, setPage, API, loading }) {
+export default function Home({ products, banner, cart, addToCart, cartTotal, setPage, openProduct, API, loading }) {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('hammasi');
 
@@ -87,7 +87,7 @@ export default function Home({ products, banner, cart, addToCart, cartTotal, set
         ) : (
           <div className="products-grid">
             {filtered.map(p => (
-              <div key={p.id} className="product-card">
+              <div key={p.id} className="product-card" onClick={() => openProduct(p)}>
                 <div className="product-img">
                   {p.image ? <img src={p.image} alt={p.name} /> : '🍰'}
                 </div>
@@ -96,7 +96,7 @@ export default function Home({ products, banner, cart, addToCart, cartTotal, set
                   <div className="product-desc">{p.description}</div>
                   <div className="product-footer">
                     <div className="product-price">{Number(p.price).toLocaleString()} so'm</div>
-                    <button className="add-btn" onClick={() => addToCart(p)}>+</button>
+                    <button className="add-btn" onClick={e => { e.stopPropagation(); addToCart(p); }}>+</button>
                   </div>
                 </div>
               </div>
