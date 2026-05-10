@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function ProductDetail({ product, setPage, addToCart, cart }) {
   if (!product) return null;
 
   const cartItem = cart.find(c => c.id === product.id);
-  const qty = cartItem ? cartItem.qty : 0;
+  const [qty, setQty] = useState(cartItem ? cartItem.qty : 1);
+
+  function handleAdd() {
+    for (let i = 0; i < qty; i++) addToCart(product);
+    setPage('cart');
+  }
 
   return (
     <div>
@@ -29,20 +34,23 @@ export default function ProductDetail({ product, setPage, addToCart, cart }) {
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px',background:'#f8f8f8',borderRadius:'16px',marginBottom:'20px'}}>
             <div>
               <div style={{fontSize:'0.78rem',color:'#888',marginBottom:'4px'}}>Narx</div>
-              <div style={{fontSize:'1.4rem',fontWeight:900,color:'#1a6b5a'}}>{Number(product.price).toLocaleString()} so'm</div>
+              <div style={{fontSize:'1.4rem',fontWeight:900,color:'#1a6b5a'}}>{Number(product.price * qty).toLocaleString()} so'm</div>
             </div>
-            {qty > 0 && (
-              <div style={{background:'#e8f5f1',borderRadius:'12px',padding:'8px 16px',fontWeight:800,color:'#1a6b5a'}}>
-                Savatda: {qty} ta
-              </div>
-            )}
+            <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
+              <button
+                onClick={() => setQty(q => Math.max(1, q - 1))}
+                style={{background:'#e8f5f1',border:'none',width:'36px',height:'36px',borderRadius:'50%',fontSize:'1.2rem',fontWeight:900,color:'#1a6b5a',cursor:'pointer'}}
+              >−</button>
+              <span style={{fontWeight:900,fontSize:'1.1rem',minWidth:'20px',textAlign:'center'}}>{qty}</span>
+              <button
+                onClick={() => setQty(q => q + 1)}
+                style={{background:'#1a6b5a',border:'none',width:'36px',height:'36px',borderRadius:'50%',fontSize:'1.2rem',fontWeight:900,color:'#fff',cursor:'pointer'}}
+              >+</button>
+            </div>
           </div>
 
-          <button
-            className="order-btn"
-            onClick={() => { addToCart(product); setPage('cart'); }}
-          >
-            🛒 Savatga qo'shish
+          <button className="order-btn" onClick={handleAdd}>
+            🛒 Savatga qo'shish — {Number(product.price * qty).toLocaleString()} so'm
           </button>
         </div>
       </div>
