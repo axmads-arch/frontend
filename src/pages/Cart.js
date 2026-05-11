@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function Cart({ cart, addToCart, removeFromCart, setPage, API }) {
+export default function Cart({ cart, cartSum, addToCart, removeFromCart, setPage, setCart, API, deliveryType }) {
   const [step, setStep] = useState('cart');
   const [name, setName] = useState(localStorage.getItem('userName') || '');
   const [phone, setPhone] = useState(localStorage.getItem('userPhone') || '');
   const [address, setAddress] = useState(localStorage.getItem('userAddress') || '');
+  const [orderType, setOrderType] = useState(deliveryType === 'pickup' ? 'pickup' : 'delivery');
   const [paymentType, setPaymentType] = useState('naqd');
   const [loading, setLoading] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
-
-  const total = cart.reduce((s, c) => s + c.qty * c.price, 0);
 
   useEffect(() => {
     if (showMap) loadMap();
@@ -67,20 +66,25 @@ export default function Cart({ cart, addToCart, removeFromCart, setPage, API }) 
   }
 
   async function submitOrder() {
-    if (!name || !phone || !address) return alert('Barcha maydonlarni toldiring!');
+    if (!name || !phone) return alert('Ism va telefon kiriting!');
+    if (orderType === 'delivery' && !address) return alert('Manzil kiriting!');
     setLoading(true);
     try {
       const res = await fetch(API + '/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerName: name, phone, address,
+          customerName: name,
+          phone,
+          address: orderType === 'pickup' ? "O'zi olib ketadi" : address,
           paymentType,
+          orderType,
           items: cart.map(c => ({ productId: c.id, quantity: c.qty, price: c.price }))
         })
       });
       if (!res.ok) throw new Error('Xatolik');
       localStorage.setItem('userAddress', address);
+      setCart([]);
       setStep('success');
       setTimeout(() => { setStep('cart'); setPage('home'); }, 3000);
     } catch(e) {
@@ -94,9 +98,9 @@ export default function Cart({ cart, addToCart, removeFromCart, setPage, API }) 
     return (
       <div className="success-overlay">
         <div className="success-box">
-          <div className="icon">🎉</div>
-          <h3>Buyurtma qabul qilindi!</h3>
-          <p>Tez orada siz bilan boglanamiz</p>
+          <div className="success-icon">🎉</div>
+          <div className="success-title">Buyurtma qabul qilindi!</div>
+          <div className="success-text">Tez orada siz bilan bog'lanamiz</div>
         </div>
       </div>
     );
@@ -109,92 +113,121 @@ export default function Cart({ cart, addToCart, removeFromCart, setPage, API }) 
           <button className="back-btn" onClick={() => setStep('cart')}>←</button>
           <h2>Buyurtma</h2>
         </div>
-        <div className="page">
-          {!localStorage.getItem('userName') && (
-            <div className="form-group">
-              <label>Ismingiz</label>
-              <input type="text" placeholder="Ism Familiya" value={name} onChange={e => setName(e.target.value)} />
-            </div>
-          )}
-          {!localStorage.getItem('userPhone') && (
-            <div className="form-group">
-              <label>Telefon</label>
-              <input type="tel" placeholder="+998 90 000 00 00" value={phone} onChange={e => setPhone(e.target.value)} />
-            </div>
-          )}
-          {(localStorage.getItem('userName') || localStorage.getItem('userPhone')) && (
-            <div style={{background:'#e8f5f1',borderRadius:'12px',padding:'12px',marginBottom:'14px',fontSize:'0.85rem',color:'#1a6b5a'}}>
-              👤 {name} • 📞 {phone}
-            </div>
-          )}
+        <div className="page" style={{paddingBottom:'120px'}}>
 
-          <div className="form-group">
-            <label>Manzil</label>
-            <div style={{display:'flex',gap:'8px',marginBottom:'10px'}}>
+          <div style={{background:'#fff',borderRadius:'16px',padding:'16px',marginBottom:'12px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+            <div style={{fontSize:'0.78rem',color:'#999',fontWeight:700,marginBottom:'10px'}}>YETKAZISH USULI</div>
+            <div className="payment-options">
               <button
-                onClick={() => setShowMap(!showMap)}
-                style={{background:'#1a6b5a',color:'#fff',border:'none',padding:'10px 14px',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'0.85rem'}}
+                className={'payment-btn' + (orderType === 'delivery' ? ' active' : '')}
+                onClick={() => setOrderType('delivery')}
               >
-                🗺️ {showMap ? 'Yopish' : 'Xaritadan tanlash'}
+                🚚 Yetkazib berish
+              </button>
+              <button
+                className={'payment-btn' + (orderType === 'pickup' ? ' active' : '')}
+                onClick={() => setOrderType('pickup')}
+              >
+                🏪 Olib ketish
               </button>
             </div>
-            {showMap && (
-              <div style={{marginBottom:'12px'}}>
-                <div ref={mapRef} style={{height:'250px',borderRadius:'12px',overflow:'hidden',border:'1.5px solid #eee'}}></div>
-                <p style={{fontSize:'0.75rem',color:'#888',marginTop:'6px'}}>📍 Xaritada bosing yoki markerni suring</p>
-              </div>
-            )}
-            <textarea
-              placeholder="Manzil..."
-              value={address}
-              onChange={e => setAddress(e.target.value)}
-              style={{width:'100%',padding:'12px 14px',border:'1.5px solid #eee',borderRadius:'12px',fontFamily:'Nunito,sans-serif',fontSize:'0.9rem',outline:'none',resize:'none',height:'80px'}}
-            />
           </div>
 
-          <div className="form-group">
-            <label>Tolov turi</label>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginTop:'6px'}}>
+          {!localStorage.getItem('userName') && (
+            <div style={{background:'#fff',borderRadius:'16px',padding:'16px',marginBottom:'12px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+              <div style={{fontSize:'0.78rem',color:'#999',fontWeight:700,marginBottom:'10px'}}>KONTAKT</div>
+              <div className="form-group">
+                <label className="form-label">Ismingiz</label>
+                <input className="form-input" type="text" placeholder="Ism Familiya" value={name} onChange={e => setName(e.target.value)} />
+              </div>
+              <div className="form-group" style={{marginBottom:0}}>
+                <label className="form-label">Telefon</label>
+                <input className="form-input" type="tel" placeholder="+998 90 000 00 00" value={phone} onChange={e => setPhone(e.target.value)} />
+              </div>
+            </div>
+          )}
+
+          {localStorage.getItem('userName') && (
+            <div style={{background:'#e8f5f1',borderRadius:'16px',padding:'14px',marginBottom:'12px',display:'flex',alignItems:'center',gap:'10px'}}>
+              <span style={{fontSize:'1.4rem'}}>👤</span>
+              <div>
+                <div style={{fontWeight:800,fontSize:'0.9rem'}}>{name}</div>
+                <div style={{fontSize:'0.82rem',color:'#1a6b5a'}}>{phone}</div>
+              </div>
+            </div>
+          )}
+
+          {orderType === 'delivery' && (
+            <div style={{background:'#fff',borderRadius:'16px',padding:'16px',marginBottom:'12px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+              <div style={{fontSize:'0.78rem',color:'#999',fontWeight:700,marginBottom:'10px'}}>MANZIL</div>
               <button
+                onClick={() => setShowMap(!showMap)}
+                style={{background:'#1a6b5a',color:'#fff',border:'none',padding:'10px 16px',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'0.85rem',marginBottom:'10px',width:'100%'}}
+              >
+                🗺️ {showMap ? 'Xaritani yopish' : 'Xaritadan tanlash'}
+              </button>
+              {showMap && (
+                <div style={{marginBottom:'10px'}}>
+                  <div ref={mapRef} style={{height:'220px',borderRadius:'12px',overflow:'hidden',border:'1.5px solid #eee'}}></div>
+                  <p style={{fontSize:'0.75rem',color:'#888',marginTop:'6px'}}>📍 Xaritada bosing yoki markerni suring</p>
+                </div>
+              )}
+              <textarea
+                className="form-textarea"
+                placeholder="Manzilni kiriting..."
+                value={address}
+                onChange={e => setAddress(e.target.value)}
+              />
+            </div>
+          )}
+
+          {orderType === 'pickup' && (
+            <div style={{background:'#e8f5f1',borderRadius:'16px',padding:'14px',marginBottom:'12px'}}>
+              <div style={{fontWeight:800,fontSize:'0.88rem',color:'#1a6b5a',marginBottom:'4px'}}>🏪 Bizning manzil</div>
+              <div style={{fontSize:'0.82rem',color:'#444'}}>Toshkent, Ko'kcha Darvoza ko'chasi, 338A</div>
+              <div style={{fontSize:'0.78rem',color:'#888',marginTop:'4px'}}>⏰ 24/7 ishlaydi</div>
+            </div>
+          )}
+
+          <div style={{background:'#fff',borderRadius:'16px',padding:'16px',marginBottom:'12px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+            <div style={{fontSize:'0.78rem',color:'#999',fontWeight:700,marginBottom:'10px'}}>TO'LOV USULI</div>
+            <div className="payment-options">
+              <button
+                className={'payment-btn' + (paymentType === 'naqd' ? ' active' : '')}
                 onClick={() => setPaymentType('naqd')}
-                style={{
-                  padding:'14px',borderRadius:'12px',border:'2px solid',
-                  borderColor: paymentType === 'naqd' ? '#1a6b5a' : '#eee',
-                  background: paymentType === 'naqd' ? '#e8f5f1' : '#fff',
-                  color: paymentType === 'naqd' ? '#1a6b5a' : '#888',
-                  fontWeight:800,fontSize:'0.88rem',cursor:'pointer'
-                }}
               >
                 💵 Naqd
               </button>
               <button
+                className={'payment-btn' + (paymentType === 'karta' ? ' active' : '')}
                 onClick={() => setPaymentType('karta')}
-                style={{
-                  padding:'14px',borderRadius:'12px',border:'2px solid',
-                  borderColor: paymentType === 'karta' ? '#1a6b5a' : '#eee',
-                  background: paymentType === 'karta' ? '#e8f5f1' : '#fff',
-                  color: paymentType === 'karta' ? '#1a6b5a' : '#888',
-                  fontWeight:800,fontSize:'0.88rem',cursor:'pointer'
-                }}
               >
                 💳 Karta
               </button>
             </div>
           </div>
 
-          <div style={{background:'#f8f8f8',borderRadius:'12px',padding:'14px',marginBottom:'16px'}}>
-            <div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px',fontSize:'0.85rem',color:'#888'}}>
+          <div style={{background:'#fff',borderRadius:'16px',padding:'16px',boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px',fontSize:'0.88rem',color:'#888'}}>
               <span>Mahsulotlar</span>
-              <span>{Number(total).toLocaleString()} som</span>
+              <span>{Number(cartSum).toLocaleString()} so'm</span>
             </div>
-            <div style={{display:'flex',justifyContent:'space-between',fontWeight:900,fontSize:'1rem',color:'#1a6b5a'}}>
+            {orderType === 'delivery' && (
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px',fontSize:'0.88rem',color:'#888'}}>
+                <span>Yetkazib berish</span>
+                <span style={{color:'#1a6b5a',fontWeight:700}}>Bepul</span>
+              </div>
+            )}
+            <div style={{display:'flex',justifyContent:'space-between',fontWeight:900,fontSize:'1rem',borderTop:'1px solid #eee',paddingTop:'10px'}}>
               <span>Jami</span>
-              <span>{Number(total).toLocaleString()} som</span>
+              <span style={{color:'#1a6b5a'}}>{Number(cartSum).toLocaleString()} so'm</span>
             </div>
           </div>
+        </div>
 
-          <button className="order-btn" onClick={submitOrder} disabled={loading}>
-            {loading ? 'Yuborilmoqda...' : 'Buyurtma berish — ' + Number(total).toLocaleString() + ' som'}
+        <div className="cart-footer">
+          <button className="btn-primary" onClick={submitOrder} disabled={loading}>
+            {loading ? 'Yuborilmoqda...' : 'Buyurtma berish — ' + Number(cartSum).toLocaleString() + " so'm"}
           </button>
         </div>
       </div>
@@ -205,37 +238,53 @@ export default function Cart({ cart, addToCart, removeFromCart, setPage, API }) 
     <div>
       <div className="page-header">
         <button className="back-btn" onClick={() => setPage('home')}>←</button>
-        <h2>🛒 Savat</h2>
-      </div>
-      <div className="page">
-        {cart.length === 0 ? (
-          <div className="empty-state">
-            <div className="icon">🛒</div>
-            <p>Savat bosh</p>
-          </div>
-        ) : (
-          <>
-            {cart.map(c => (
-              <div key={c.id} className="cart-item">
-                <div className="cart-item-name">{c.name}</div>
-                <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-                  <button className="qty-btn" onClick={() => removeFromCart(c.id)}>−</button>
-                  <span className="qty-num">{c.qty}</span>
-                  <button className="qty-btn" onClick={() => addToCart(c)}>+</button>
-                </div>
-                <div className="cart-item-price">{Number(c.qty * c.price).toLocaleString()} som</div>
-              </div>
-            ))}
-            <div className="cart-total-row">
-              <span>Jami:</span>
-              <span>{Number(total).toLocaleString()} som</span>
-            </div>
-            <button className="order-btn" onClick={() => setStep('form')}>
-              📦 Buyurtma berish
-            </button>
-          </>
+        <h2>Savat</h2>
+        {cart.length > 0 && (
+          <button
+            onClick={() => setCart([])}
+            style={{marginLeft:'auto',background:'#fee2e2',color:'#ef4444',border:'none',padding:'6px 12px',borderRadius:'8px',fontWeight:700,fontSize:'0.8rem',cursor:'pointer'}}
+          >
+            🗑️
+          </button>
         )}
       </div>
+      <div className="page" style={{paddingBottom:'140px'}}>
+        {cart.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🛒</div>
+            <p className="empty-text">Savat bo'sh</p>
+            <button className="btn-primary" onClick={() => setPage('home')}>Menuni ko'rish</button>
+          </div>
+        ) : (
+          cart.map(c => (
+            <div key={c.id} className="cart-item">
+              <div className="cart-item-img">
+                {c.image ? <img src={c.image} alt={c.name} /> : '🍰'}
+              </div>
+              <div className="cart-item-info">
+                <div className="cart-item-name">{c.name}</div>
+                <div className="cart-item-price">{Number(c.price).toLocaleString()} so'm</div>
+              </div>
+              <div className="qty-controls">
+                <button className="qty-btn" onClick={() => removeFromCart(c.id)}>−</button>
+                <span className="qty-num">{c.qty}</span>
+                <button className="qty-btn" onClick={() => addToCart(c)}>+</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      {cart.length > 0 && (
+        <div className="cart-footer">
+          <div className="cart-total-row">
+            <span className="cart-total-label">Jami summa</span>
+            <span className="cart-total-sum">{Number(cartSum).toLocaleString()} so'm</span>
+          </div>
+          <button className="btn-primary" onClick={() => setStep('form')}>
+            Buyurtma berish
+          </button>
+        </div>
+      )}
     </div>
   );
 }
