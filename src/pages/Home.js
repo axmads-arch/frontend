@@ -5,7 +5,9 @@ const LOGO = 'https://i.ibb.co/qFpHKpgP/IMG-4525.jpg';
 function SkeletonCard() {
   return (
     <div className="skeleton-card">
-      <div className="skeleton-img"></div>
+      <div className="skeleton-img-wrap">
+        <div className="skeleton-img"></div>
+      </div>
       <div className="skeleton-line price"></div>
       <div className="skeleton-line"></div>
       <div className="skeleton-line short"></div>
@@ -41,18 +43,17 @@ export default function Home({ products, banner, cart, cartTotal, cartSum, addTo
         <div className="header-top">
           <div className="logo">
             <img src={LOGO} alt="Rahmat Chef" className="logo-img" />
-            <div className="logo-info">
+            <div>
               <div className="logo-name">Rahmat Chef</div>
               <div className="logo-sub">• sweet pastry •</div>
             </div>
           </div>
           <div className="header-actions">
-            {!isLoggedIn && (
+            {!isLoggedIn ? (
               <button className="header-login-btn" onClick={() => setPage('profile')}>
                 Kirish
               </button>
-            )}
-            {isLoggedIn && (
+            ) : (
               <button className="icon-btn" onClick={() => setPage('profile')}>👤</button>
             )}
           </div>
@@ -63,18 +64,18 @@ export default function Home({ products, banner, cart, cartTotal, cartSum, addTo
             className={'delivery-btn' + (deliveryType === 'delivery' ? ' active' : '')}
             onClick={() => setDeliveryType('delivery')}
           >
-            🚚 Yetkazib berish
+            Yetkazib berish
           </button>
           <button
             className={'delivery-btn' + (deliveryType === 'pickup' ? ' active' : '')}
             onClick={() => setDeliveryType('pickup')}
           >
-            🏪 Olib ketish
+            Olib ketish
           </button>
         </div>
 
         <div className="search-wrap">
-          <span>🔍</span>
+          <span style={{color:'#bbb'}}>🔍</span>
           <input
             type="text"
             placeholder="Qidirish..."
@@ -84,7 +85,7 @@ export default function Home({ products, banner, cart, cartTotal, cartSum, addTo
         </div>
       </div>
 
-      {/* STICKY CATEGORIES */}
+      {/* STICKY CATEGORIES - Tab uslubida */}
       <div className="categories-sticky">
         <div className="categories-wrap">
           <button className="filter-btn" onClick={() => setShowSort(true)}>⚙️</button>
@@ -127,8 +128,10 @@ export default function Home({ products, banner, cart, cartTotal, cartSum, addTo
           <div className="products-grid">
             {filtered.map(p => (
               <div key={p.id} className="product-card" onClick={() => openProduct(p)}>
-                <div className="product-img">
-                  {p.image ? <img src={p.image} alt={p.name} /> : '🍰'}
+                <div className="product-img-wrap">
+                  <div className="product-img">
+                    {p.image ? <img src={p.image} alt={p.name} /> : '🍰'}
+                  </div>
                 </div>
                 <div className="product-info">
                   <div className="product-price">{Number(p.price).toLocaleString()} so'm</div>
@@ -162,7 +165,9 @@ export default function Home({ products, banner, cart, cartTotal, cartSum, addTo
             <div className="modal-handle"></div>
             <div className="modal-header">
               <span className="modal-title">Saralash</span>
-              <button className="modal-reset" onClick={() => { setSortType(''); setShowSort(false); }}>Bekor qilish</button>
+              <button className="modal-reset" onClick={() => { setSortType(''); setShowSort(false); }}>
+                Bekor qilish
+              </button>
               <button className="modal-close" onClick={() => setShowSort(false)}>✕</button>
             </div>
             {[
@@ -170,12 +175,20 @@ export default function Home({ products, banner, cart, cartTotal, cartSum, addTo
               { key: 'cheap', label: 'Avval arzon' },
               { key: 'expensive', label: 'Avval qimmat' },
             ].map(opt => (
-              <div key={opt.key} className="sort-option" onClick={() => { setSortType(opt.key); setShowSort(false); }}>
+              <div
+                key={opt.key}
+                className="sort-option"
+                onClick={() => { setSortType(opt.key); setShowSort(false); }}
+              >
                 <span>{opt.label}</span>
                 <div className={'sort-radio' + (sortType === opt.key ? ' selected' : '')}></div>
               </div>
             ))}
-            <button className="btn-primary" style={{marginTop:'16px'}} onClick={() => setShowSort(false)}>
+            <button
+              className="btn-primary"
+              style={{marginTop:'20px'}}
+              onClick={() => setShowSort(false)}
+            >
               Qo'llash
             </button>
           </div>
