@@ -1,89 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-export default function Orders({ setPage, API }) {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const phone = localStorage.getItem('userPhone');
+const BADGE = {
+  new:  { cls: 'badge-new',  label: 'Новый'     },
+  prep: { cls: 'badge-prep', label: 'Готовится' },
+  way:  { cls: 'badge-way',  label: 'В пути'    },
+  done: { cls: 'badge-done', label: 'Доставлен' },
+};
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
-  async function loadOrders() {
-    if (!phone) { setLoading(false); return; }
-    try {
-      const res = await fetch(API + '/api/orders/my/' + phone);
-      const data = await res.json();
-      if (Array.isArray(data)) setOrders(data);
-    } catch(e) {}
-    setLoading(false);
-  }
-
-  if (!phone) {
-    return (
-      <div>
-        <div className="page-header">
-          <h2>Buyurtmalar</h2>
-        </div>
-        <div className="empty-state">
-          <div className="empty-icon">📋</div>
-          <p className="empty-text">Buyurtmalarni ko'rish uchun profilga kiring</p>
-          <button className="btn-primary" onClick={() => setPage('profile')}>
-            Profilga o'tish
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+export default function OrdersPage({ orders, fmt }) {
   return (
-    <div>
+    <div className="page">
       <div className="page-header">
-        <h2>Buyurtmalar</h2>
+        <div style={{ width: 36 }} />
+        <span className="page-title">Заказы</span>
+        <div style={{ width: 36 }} />
       </div>
-      <div className="page">
-        {loading ? (
-          <div className="empty-state"><p>Yuklanmoqda...</p></div>
-        ) : orders.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">📋</div>
-            <p className="empty-text">Buyurtmalar yo'q</p>
-            <button className="btn-primary" onClick={() => setPage('home')}>
-              Buyurtma berish
-            </button>
-          </div>
-        ) : (
-          orders.map(o => (
-            <div key={o.id} className="order-card">
-              <div className="order-card-header">
-                <span className="order-card-id">Buyurtma #{o.id}</span>
-                <span className={'order-status-badge status-' + o.status}>
-                  {o.status}
-                </span>
-              </div>
-              {o.address && (
-                <div className="order-card-address">📍 {o.address}</div>
-              )}
-              {o.items && o.items.length > 0 && (
-                <div style={{fontSize:'0.82rem',color:'#666',marginBottom:'6px'}}>
-                  {o.items.map(i => (
-                    <span key={i.id} style={{marginRight:'8px'}}>
-                      {i.product ? i.product.name : 'Mahsulot'} x{i.quantity}
-                    </span>
-                  ))}
+
+      {orders.length === 0 ? (
+        <div className="empty-state" style={{ paddingTop: 80 }}>
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          <h3>Нет заказов</h3>
+          <p>Здесь появится история ваших заказов</p>
+        </div>
+      ) : (
+        <div style={{ paddingBottom: 20 }}>
+          {orders.map((o, i) => {
+            const b = BADGE[o.status] || BADGE.done;
+            return (
+              <div key={i} className="order-card">
+                <div className="order-head">
+                  <span className="order-id">{o.id}</span>
+                  <span className={`order-badge ${b.cls}`}>{b.label}</span>
                 </div>
-              )}
-              <div className="order-card-total">{Number(o.total).toLocaleString()} so'm</div>
-              <div className="order-card-date">
-                {new Date(o.createdAt).toLocaleDateString('uz-UZ', {
-                  year: 'numeric', month: 'long', day: 'numeric',
-                  hour: '2-digit', minute: '2-digit'
-                })}
+                <div className="order-items">{o.items}</div>
+                <div className="order-total">{fmt(o.total)}</div>
+                <div className="order-date">{o.date}</div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
+ 
