@@ -44,7 +44,7 @@ export default function CartPage({ cart, cartTotal, onAdd, onRem, onClear, onBac
         <>
           <div style={{ paddingBottom: 150 }}>
             {items.map(([id, qty]) => {
-              const p = PRODUCTS.find(p => p.id == id);
+              const p = PRODUCTS.find(p => p.id === Number(id));
               if (!p) return null;
               return (
                 <div key={id} className="cart-item">
