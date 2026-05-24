@@ -48,7 +48,7 @@ export const MENU_ITEMS = [
   { icon: '💳', label: 'Мои карты'  },
   { icon: 'ℹ️', label: 'О нас'      },
   { icon: '📍', label: 'Филиалы'    },
-  { icon: '🏷️', label: 'Акции'      },
+  { icon: '🏷', label: 'Акции'      },
   { icon: '📞', label: 'Контакты'   },
   { icon: '🌐', label: 'Язык'       },
 ];
@@ -60,6 +60,6 @@ export const totalItems = cart =>
 
 export const totalPrice = cart =>
   Object.entries(cart).reduce((s, [id, qty]) => {
-    const p = PRODUCTS.find(p => p.id == id);
+    const p = PRODUCTS.find(p => p.id === Number(id));
     return s + (p ? p.price * qty : 0);
   }, 0);
