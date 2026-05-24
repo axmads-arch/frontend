@@ -48,7 +48,7 @@ export const MENU_ITEMS = [
   { icon: '💳', label: 'Мои карты'  },
   { icon: 'ℹ️', label: 'О нас'      },
   { icon: '📍', label: 'Филиалы'    },
-  { icon: '🏷', label: 'Акции'      },
+  { icon: '🏷️', label: 'Акции'      },
   { icon: '📞', label: 'Контакты'   },
   { icon: '🌐', label: 'Язык'       },
 ];
