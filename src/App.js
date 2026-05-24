@@ -94,7 +94,7 @@ export default function App() {
       id: '#' + (1043 + orders.length),
       items: Object.entries(cart)
         .map(([id, qty]) => {
-          const p = PRODUCTS.find(p => p.id == id);
+          const p = PRODUCTS.find(p => p.id === Number(id));
           return p ? (qty > 1 ? `${p.name} x${qty}` : p.name) : '';
         })
         .filter(Boolean)
