@@ -35,9 +35,9 @@ export default function Header({ delivery, onDeliveryChange, onSearch }) {
 
       <div className="dlv-row">
         <div className="dlv-left">
-          <span className="dlv-label">Доставка</span>
+          <span className="dlv-label">Yetkazib berish</span>
           <span className="dlv-addr" onClick={() => setDdOpen(v => !v)}>
-            Определение адреса...
+            Manzilni aniqlash...
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="m6 9 6 6 6-6"/>
             </svg>
@@ -55,7 +55,7 @@ export default function Header({ delivery, onDeliveryChange, onSearch }) {
           <>
             <div style={{ position:'fixed', inset:0, zIndex:98 }} onClick={() => setDdOpen(false)} />
             <div className="dlv-dropdown">
-              {['Доставка', 'Самовывоз'].map(v => (
+              {['Yetkazib berish', 'Olib ketish'].map(v => (
                 <div key={v} className="dd-item" onClick={() => pick(v)}>
                   {v}
                   {delivery === v && (
