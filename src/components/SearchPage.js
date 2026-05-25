@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { PRODUCTS } from '../data/products';
 import ProductCard from './ProductCard';
 
-export default function SearchPage({ cart, onAdd, onRem, onClose, fmt }) {
+export default function SearchPage({ products, cart, onAdd, onRem, onClose, fmt, getFiltered }) {
   const [query, setQuery] = useState('');
   const inputRef = useRef();
 
@@ -10,9 +9,7 @@ export default function SearchPage({ cart, onAdd, onRem, onClose, fmt }) {
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
-  const results = query.trim()
-    ? PRODUCTS.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
-    : [];
+  const results = getFiltered(query);
 
   return (
     <div className="search-page">
@@ -30,14 +27,14 @@ export default function SearchPage({ cart, onAdd, onRem, onClose, fmt }) {
             ref={inputRef}
             className="search-input"
             type="text"
-            placeholder="Быстрый поиск"
+            placeholder="Tezkor qidiruv"
             value={query}
             onChange={e => setQuery(e.target.value)}
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              style={{background:'none',border:'none',cursor:'pointer',color:'#aaa',lineHeight:1}}
+              style={{ background:'none', border:'none', cursor:'pointer', color:'#aaa', lineHeight:1 }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M18 6 6 18M6 6l12 12"/>
@@ -48,22 +45,22 @@ export default function SearchPage({ cart, onAdd, onRem, onClose, fmt }) {
       </div>
 
       <div className="search-results">
-        {!query.trim() && (
-          <div className="search-empty">Введите название блюда для поиска</div>
+        {!query.trim() ? (
+          <div className="search-empty">Taom nomini kiriting</div>
+        ) : results.length === 0 ? (
+          <div className="search-empty">«{query}» bo'yicha hech narsa topilmadi</div>
+        ) : (
+          results.map(p => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              qty={cart[p.id] || 0}
+              onAdd={onAdd}
+              onRem={onRem}
+              fmt={fmt}
+            />
+          ))
         )}
-        {query.trim() && results.length === 0 && (
-          <div className="search-empty">По запросу «{query}» ничего не найдено</div>
-        )}
-        {results.map(p => (
-          <ProductCard
-            key={p.id}
-            product={p}
-            qty={cart[p.id] || 0}
-            onAdd={onAdd}
-            onRem={onRem}
-            fmt={fmt}
-          />
-        ))}
       </div>
     </div>
   );
