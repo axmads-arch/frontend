@@ -1,5 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { PRODUCTS, SORT_OPTS, fmt, totalItems, totalPrice } from './data/products';
+import {
+  SORT_OPTS, fmt, totalItems, totalPrice,
+  fetchProducts, createOrder, fetchMyOrders
+} from './data/products';
 import Header from './components/Header';
 import Categories from './components/Categories';
 import BottomNav from './components/BottomNav';
@@ -11,12 +14,6 @@ import SortSheet from './components/SortSheet';
 import AuthSheet from './components/AuthSheet';
 import SearchPage from './components/SearchPage';
 import SuccessModal from './components/SuccessModal';
-
-const INIT_ORDERS = [
-  { id:'#1042', items:'Плов, Шашлык, Чай',  total:162000, status:'done', date:'14.05.2026, 12:30' },
-  { id:'#1038', items:'Шакшука x2, Сок',     total:120000, status:'way',  date:'13.05.2026, 19:15' },
-  { id:'#1031', items:'Манты, Самса x2',      total:85000,  status:'done', date:'11.05.2026, 13:00' },
-];
 
 function loadCart() {
   try { return JSON.parse(localStorage.getItem('rc_cart') || '{}'); }
@@ -30,18 +27,45 @@ function loadUser() {
 
 export default function App() {
   const [tab,         setTab]         = useState('home');
-  const [cat,         setCat]         = useState('breakfast');
+  const [cat,         setCat]         = useState('all');
   const [cart,        setCartRaw]     = useState(loadCart);
   const [sortSel,     setSortSel]     = useState(null);
   const [sortApplied, setSortApplied] = useState(null);
   const [user,        setUserRaw]     = useState(loadUser);
-  const [delivery,    setDelivery]    = useState('Доставка');
+  const [delivery,    setDelivery]    = useState('Yetkazib berish');
   const [showSort,    setShowSort]    = useState(false);
   const [showAuth,    setShowAuth]    = useState(false);
   const [showSearch,  setShowSearch]  = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [orders,      setOrders]      = useState(INIT_ORDERS);
+  const [orders,      setOrders]      = useState([]);
+  const [products,    setProducts]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
   const [addrBanner,  setAddrBanner]  = useState(true);
+  const [ordering,    setOrdering]    = useState(false);
+
+  // Load products from backend
+  useEffect(() => {
+    setLoading(true);
+    fetchProducts(cat)
+      .then(data => {
+        let list = Array.isArray(data) ? data : [];
+        if (sortApplied === 'az')        list = [...list].sort((a,b) => a.name.localeCompare(b.name));
+        if (sortApplied === 'cheap')     list = [...list].sort((a,b) => a.price - b.price);
+        if (sortApplied === 'expensive') list = [...list].sort((a,b) => b.price - a.price);
+        setProducts(list);
+      })
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, [cat, sortApplied]);
+
+  // Load user orders
+  useEffect(() => {
+    if (user?.phone && tab === 'orders') {
+      fetchMyOrders(user.phone)
+        .then(data => setOrders(Array.isArray(data) ? data : []))
+        .catch(() => setOrders([]));
+    }
+  }, [user, tab]);
 
   const setCart = useCallback(fn => {
     setCartRaw(prev => {
@@ -57,7 +81,7 @@ export default function App() {
   }, []);
 
   const cartCount = totalItems(cart);
-  const cartTotal = totalPrice(cart);
+  const cartTotal = totalPrice(cart, products);
 
   const addToCart = useCallback(id => {
     setCart(c => ({ ...c, [id]: (c[id] || 0) + 1 }));
@@ -72,41 +96,36 @@ export default function App() {
   }, [setCart]);
 
   const clearCart = () => {
-    if (window.confirm('Очистить корзину?')) setCart({});
+    if (window.confirm('Savatchani tozalash?')) setCart({});
   };
-
-  const getProducts = useCallback((q = '') => {
-    let list = PRODUCTS.filter(p => cat === 'filter' || p.cat === cat);
-    if (q.trim()) list = list.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
-    if (sortApplied === 'az')        list = [...list].sort((a,b) => a.name.localeCompare(b.name, 'ru'));
-    if (sortApplied === 'cheap')     list = [...list].sort((a,b) => a.price - b.price);
-    if (sortApplied === 'expensive') list = [...list].sort((a,b) => b.price - a.price);
-    return list;
-  }, [cat, sortApplied]);
 
   const handleCat = id => {
     if (id === 'filter') { setShowSort(true); return; }
     setCat(id);
   };
 
-  const handleCheckout = () => {
-    const newOrder = {
-      id: '#' + (1043 + orders.length),
-      items: Object.entries(cart)
-        .map(([id, qty]) => {
-          const p = PRODUCTS.find(p => p.id === Number(id));
-          return p ? (qty > 1 ? `${p.name} x${qty}` : p.name) : '';
-        })
-        .filter(Boolean)
-        .join(', '),
-      total: cartTotal,
-      status: 'new',
-      date: new Date().toLocaleString('ru'),
-    };
-    setCart({});
-    setOrders(prev => [newOrder, ...prev]);
-    setTab('home');
-    setShowSuccess(true);
+  const handleCheckout = async (orderInfo) => {
+    if (!user) { setShowAuth(true); return; }
+    setOrdering(true);
+    try {
+      const items = Object.entries(cart).map(([id, qty]) => {
+        const p = products.find(p => p.id === Number(id));
+        return { productId: Number(id), quantity: qty, price: p?.price || 0 };
+      });
+      await createOrder({
+        customerName: user.name,
+        phone: user.phone,
+        address: orderInfo?.address || 'Manzil kiritilmagan',
+        items,
+      });
+      setCart({});
+      setShowSuccess(true);
+      setTab('home');
+    } catch (e) {
+      alert('Xatolik: ' + e.message);
+    } finally {
+      setOrdering(false);
+    }
   };
 
   const handleSuccessClose = () => {
@@ -120,27 +139,32 @@ export default function App() {
     setTab('profile');
   };
 
-  useEffect(() => {
-    const handler = e => {
-      if (showSearch) { e.preventDefault(); setShowSearch(false); }
-    };
-    window.addEventListener('popstate', handler);
-    return () => window.removeEventListener('popstate', handler);
-  }, [showSearch]);
+  const getFilteredProducts = (q = '') => {
+    if (!q.trim()) return products;
+    return products.filter(p =>
+      p.name.toLowerCase().includes(q.toLowerCase())
+    );
+  };
 
   const catLabel = {
-    breakfast:'Завтраки', salads:'Салаты', sandwich:'Сэндвичи',
-    mains:'Вторые блюда', soups:'Супы', pastry:'Выпечка',
-    drinks:'Напитки', desserts:'Десерты', filter:'Все блюда'
-  }[cat] || 'Блюда';
+    all:'Barcha taomlar', breakfast:'Nonushta', salads:'Salatlar',
+    sandwich:'Sendvichlar', mains:'Asosiy taomlar', soups:"Sho'rvalar",
+    pastry:'Non va pishiriqlar', drinks:'Ichimliklar', desserts:'Desertlar',
+    filter:'Barcha taomlar'
+  }[cat] || 'Taomlar';
 
   return (
     <div className="app">
       <div style={{ display: tab === 'home' ? 'block' : 'none' }}>
-        <Header delivery={delivery} onDeliveryChange={setDelivery} onSearch={() => setShowSearch(true)} />
+        <Header
+          delivery={delivery}
+          onDeliveryChange={setDelivery}
+          onSearch={() => setShowSearch(true)}
+        />
         <Categories cat={cat} onSelect={handleCat} />
         <HomePage
-          products={getProducts()}
+          products={products}
+          loading={loading}
           catLabel={catLabel}
           cart={cart}
           onAdd={addToCart}
@@ -157,18 +181,27 @@ export default function App() {
       {tab === 'cart' && (
         <CartPage
           cart={cart}
+          products={products}
           cartTotal={cartTotal}
           onAdd={addToCart}
           onRem={remFromCart}
           onClear={clearCart}
           onBack={() => setTab('home')}
           onCheckout={handleCheckout}
+          ordering={ordering}
+          user={user}
+          onLogin={() => setShowAuth(true)}
           fmt={fmt}
         />
       )}
 
       {tab === 'orders' && (
-        <OrdersPage orders={orders} fmt={fmt} />
+        <OrdersPage
+          orders={orders}
+          user={user}
+          onLogin={() => setShowAuth(true)}
+          fmt={fmt}
+        />
       )}
 
       {tab === 'profile' && (
@@ -183,11 +216,13 @@ export default function App() {
 
       {showSearch && (
         <SearchPage
+          products={products}
           cart={cart}
           onAdd={addToCart}
           onRem={remFromCart}
           onClose={() => setShowSearch(false)}
           fmt={fmt}
+          getFiltered={getFilteredProducts}
         />
       )}
 
