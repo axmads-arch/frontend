@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   SORT_OPTS, fmt, totalItems, totalPrice,
-  fetchProducts, createOrder, fetchMyOrders
+  fetchProducts, fetchCategories, createOrder, fetchMyOrders
 } from './data/products';
 import Header from './components/Header';
 import Categories from './components/Categories';
@@ -43,7 +43,7 @@ export default function App() {
   const [addrBanner,  setAddrBanner]  = useState(true);
   const [ordering,    setOrdering]    = useState(false);
 
-  // Load products from backend
+  // Mahsulotlarni backenddan yuklash
   useEffect(() => {
     setLoading(true);
     fetchProducts(cat)
@@ -58,7 +58,7 @@ export default function App() {
       .finally(() => setLoading(false));
   }, [cat, sortApplied]);
 
-  // Load user orders
+  // Foydalanuvchi zakazlarini yuklash
   useEffect(() => {
     if (user?.phone && tab === 'orders') {
       fetchMyOrders(user.phone)
@@ -110,14 +110,23 @@ export default function App() {
     try {
       const items = Object.entries(cart).map(([id, qty]) => {
         const p = products.find(p => p.id === Number(id));
-        return { productId: Number(id), quantity: qty, price: p?.price || 0 };
+        return {
+          productId: Number(id),
+          quantity: qty,
+          price: p?.price || 0,
+        };
       });
+
       await createOrder({
-        customerName: user.name,
-        phone: user.phone,
-        address: orderInfo?.address || 'Manzil kiritilmagan',
+        customerName:  user.name,
+        phone:         user.phone,
+        address:       orderInfo.address || '',
+        deliveryType:  orderInfo.deliveryType || 'delivery',
+        paymentMethod: orderInfo.payment || 'cash',
+        comment:       orderInfo.comment || '',
         items,
       });
+
       setCart({});
       setShowSuccess(true);
       setTab('home');
@@ -147,14 +156,14 @@ export default function App() {
   };
 
   const catLabel = {
-    all:'Barcha taomlar', breakfast:'Nonushta', salads:'Salatlar',
-    sandwich:'Sendvichlar', mains:'Asosiy taomlar', soups:"Sho'rvalar",
-    pastry:'Non va pishiriqlar', drinks:'Ichimliklar', desserts:'Desertlar',
-    filter:'Barcha taomlar'
-  }[cat] || 'Taomlar';
+    all: 'Barcha taomlar',
+    filter: 'Barcha taomlar',
+  }[cat] || cat;
 
   return (
     <div className="app">
+
+      {/* HOME */}
       <div style={{ display: tab === 'home' ? 'block' : 'none' }}>
         <Header
           delivery={delivery}
@@ -178,6 +187,7 @@ export default function App() {
         />
       </div>
 
+      {/* CART */}
       {tab === 'cart' && (
         <CartPage
           cart={cart}
@@ -195,6 +205,7 @@ export default function App() {
         />
       )}
 
+      {/* ORDERS */}
       {tab === 'orders' && (
         <OrdersPage
           orders={orders}
@@ -204,6 +215,7 @@ export default function App() {
         />
       )}
 
+      {/* PROFILE */}
       {tab === 'profile' && (
         <ProfilePage
           user={user}
@@ -212,8 +224,10 @@ export default function App() {
         />
       )}
 
+      {/* BOTTOM NAV */}
       <BottomNav tab={tab} onNav={setTab} cartCount={cartCount} />
 
+      {/* SEARCH */}
       {showSearch && (
         <SearchPage
           products={products}
@@ -226,6 +240,7 @@ export default function App() {
         />
       )}
 
+      {/* SORT */}
       {showSort && (
         <SortSheet
           opts={SORT_OPTS}
@@ -237,6 +252,7 @@ export default function App() {
         />
       )}
 
+      {/* AUTH */}
       {showAuth && (
         <AuthSheet
           onClose={() => setShowAuth(false)}
@@ -244,7 +260,9 @@ export default function App() {
         />
       )}
 
+      {/* SUCCESS */}
       {showSuccess && <SuccessModal onClose={handleSuccessClose} />}
+
     </div>
   );
 }
