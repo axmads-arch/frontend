@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { API_URL } from '../data/products';
 
 const GoogleSVG = () => (
   <svg width="18" height="18" viewBox="0 0 24 24">
@@ -10,20 +11,38 @@ const GoogleSVG = () => (
 );
 
 export default function AuthSheet({ onClose, onVerify }) {
-  const [step,  setStep]  = useState('phone');
-  const [phone, setPhone] = useState('');
-  const [otp,   setOtp]   = useState(['','','','']);
-  const [error, setError] = useState('');
+  const [step,    setStep]    = useState('phone');
+  const [phone,   setPhone]   = useState('');
+  const [name,    setName]    = useState('');
+  const [otp,     setOtp]     = useState(['','','','']);
+  const [error,   setError]   = useState('');
+  const [loading, setLoading] = useState(false);
   const otpRefs = [useRef(), useRef(), useRef(), useRef()];
 
-  const handlePhone = () => {
+  const handleSendOTP = async () => {
     if (phone.replace(/\D/g,'').length < 9) {
-      setError('Введите корректный номер телефона');
+      setError('Telefon raqamni to\'g\'ri kiriting');
       return;
     }
+    if (!name.trim()) {
+      setError('Ismingizni kiriting');
+      return;
+    }
+    setLoading(true);
     setError('');
-    setStep('otp');
-    setTimeout(() => otpRefs[0].current?.focus(), 100);
+    try {
+      await fetch(`${API_URL}/api/auth/otp/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: '+998' + phone }),
+      });
+      setStep('otp');
+      setTimeout(() => otpRefs[0].current?.focus(), 100);
+    } catch {
+      setError('Xatolik yuz berdi');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOtpChange = (i, val) => {
@@ -40,11 +59,28 @@ export default function AuthSheet({ onClose, onVerify }) {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const code = otp.join('');
-    if (code.length < 4) { setError('Введите 4-значный код'); return; }
+    if (code.length < 4) { setError('4 xonali kodni kiriting'); return; }
+    setLoading(true);
     setError('');
-    onVerify('Ahmad', '+998 ' + phone);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/otp/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: '+998' + phone, code }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        onVerify(name, '+998 ' + phone);
+      } else {
+        setError(data.error || 'Kod noto\'g\'ri');
+      }
+    } catch {
+      setError('Xatolik yuz berdi');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,41 +97,78 @@ export default function AuthSheet({ onClose, onVerify }) {
                 </svg>
               </button>
             </div>
-            <div className="auth-title">Войти</div>
-            <div className="auth-field-label">Номер телефона</div>
+            <div className="auth-title">Kirish</div>
+
+            <div className="auth-field-label">Ismingiz</div>
+            <div className="phone-wrap" style={{ marginBottom: 12 }}>
+              <input
+                className="phone-input"
+                type="text"
+                placeholder="Ahmad"
+                value={name}
+                onChange={e => { setName(e.target.value); setError(''); }}
+                style={{ padding: '14px' }}
+              />
+            </div>
+
+            <div className="auth-field-label">Telefon raqam</div>
             <div className="phone-wrap">
               <span className="phone-prefix">+998</span>
               <input
                 className="phone-input"
                 type="tel"
-                placeholder="__ ___ __ __"
+                placeholder="90 123 45 67"
                 value={phone}
                 maxLength={12}
                 onChange={e => { setPhone(e.target.value); setError(''); }}
-                onKeyDown={e => { if (e.key === 'Enter') handlePhone(); }}
-                autoFocus
+                onKeyDown={e => { if (e.key === 'Enter') handleSendOTP(); }}
               />
             </div>
-            {error && <p style={{color:'#e53935',fontSize:'12px',marginBottom:'10px'}}>{error}</p>}
+
+            {error && (
+              <p style={{ color:'#e53935', fontSize:12, marginBottom:10 }}>{error}</p>
+            )}
+
             <div className="auth-terms">
-              Авторизуясь на сайте, вы соглашаетесь с{' '}
-              <a href="#terms">Условиями использования</a>
+              Davom etish orqali siz{' '}
+              <a href="#terms">foydalanish shartlarimizga</a> rozisiz
             </div>
-            <button className="auth-main-btn" onClick={handlePhone}>Продолжить</button>
-            <div className="auth-divider">или</div>
-            <button className="google-btn"><GoogleSVG /> Google orqali kirish</button>
+
+            <button
+              className="auth-main-btn"
+              onClick={handleSendOTP}
+              disabled={loading}
+              style={{ opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? 'Yuborilmoqda...' : 'Davom etish'}
+            </button>
+
+            <div className="auth-divider">yoki</div>
+            <button className="google-btn">
+              <GoogleSVG /> Google orqali kirish
+            </button>
           </>
         ) : (
           <>
             <div className="auth-close-row">
-              <button className="sheet-close" onClick={() => { setStep('phone'); setOtp(['','','','']); setError(''); }}>
+              <button className="sheet-close" onClick={() => {
+                setStep('phone');
+                setOtp(['','','','']);
+                setError('');
+              }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M19 12H5M12 5l-7 7 7 7"/>
                 </svg>
               </button>
             </div>
-            <div className="auth-title">Код из SMS</div>
-            <p className="otp-subtitle">Код отправлен на +998 {phone}</p>
+            <div className="auth-title">SMS kod</div>
+            <p className="otp-subtitle">
+              +998 {phone} raqamiga kod yuborildi.
+              <br/>
+              <span style={{ color:'var(--teal)', fontSize:12 }}>
+                (Test uchun: 1234)
+              </span>
+            </p>
             <div className="otp-row">
               {otp.map((v, i) => (
                 <input
@@ -110,8 +183,17 @@ export default function AuthSheet({ onClose, onVerify }) {
                 />
               ))}
             </div>
-            {error && <p style={{color:'#e53935',fontSize:'12px',marginBottom:'10px'}}>{error}</p>}
-            <button className="auth-main-btn" onClick={handleVerify}>Подтвердить</button>
+            {error && (
+              <p style={{ color:'#e53935', fontSize:12, marginBottom:10 }}>{error}</p>
+            )}
+            <button
+              className="auth-main-btn"
+              onClick={handleVerify}
+              disabled={loading}
+              style={{ opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? 'Tekshirilmoqda...' : 'Tasdiqlash'}
+            </button>
           </>
         )}
       </div>
