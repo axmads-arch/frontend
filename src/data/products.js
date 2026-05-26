@@ -1,22 +1,10 @@
 export const LOGO_URL = 'https://raw.githubusercontent.com/axmads-arch/frontend/main/logo.jpg';
 export const API_URL = 'https://claude-production-0b03.up.railway.app';
 
-export const CATS = [
-  { id: 'all',       label: 'Barchasi',    icon: '⊞' },
-  { id: 'breakfast', label: 'Nonushta',    icon: 'Н' },
-  { id: 'salads',    label: 'Salatlar',    icon: 'С' },
-  { id: 'sandwich',  label: 'Sendvichlar', icon: 'СД'},
-  { id: 'mains',     label: 'Asosiy',      icon: 'А' },
-  { id: 'soups',     label: 'Sho\'rvalar', icon: 'Ш' },
-  { id: 'pastry',    label: 'Non',         icon: 'Н' },
-  { id: 'drinks',    label: 'Ichimliklar', icon: 'И' },
-  { id: 'desserts',  label: 'Desertlar',   icon: 'Д' },
-];
-
 export const SORT_OPTS = [
-  { id: 'az',        label: 'A dan Z gacha'    },
-  { id: 'cheap',     label: 'Arzondan qimmatga'},
-  { id: 'expensive', label: 'Qimmatdan arzonga'},
+  { id: 'az',        label: 'A dan Z gacha'     },
+  { id: 'cheap',     label: 'Arzondan qimmatga' },
+  { id: 'expensive', label: 'Qimmatdan arzonga' },
 ];
 
 export const MENU_ITEMS = [
@@ -40,11 +28,19 @@ export const totalPrice = (cart, products) =>
 
 export async function fetchProducts(category) {
   const url = category && category !== 'all'
-    ? `${API_URL}/api/products?category=${category}`
+    ? `${API_URL}/api/products?category=${encodeURIComponent(category)}`
     : `${API_URL}/api/products`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Mahsulotlar yuklanmadi');
   return res.json();
+}
+
+export async function fetchCategories() {
+  const res = await fetch(`${API_URL}/api/products`);
+  if (!res.ok) return [];
+  const products = await res.json();
+  const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+  return cats;
 }
 
 export async function createOrder(orderData) {
