@@ -1,67 +1,89 @@
 import React from 'react';
-import { MENU_ITEMS } from '../data/products';
 
-export default function ProfilePage({ user, onLogin, onLogout }) {
+export default function Profile({ user, onLogin, onLogout, settings }) {
   if (!user) {
     return (
-      <div className="page">
-        <div className="page-header">
-          <div style={{ width: 36 }} />
-          <span className="page-title">Profil</span>
-          <div style={{ width: 36 }} />
+      <div className="profile-page">
+        <div className="profile-header">
+          <div className="profile-avatar">👤</div>
+          <div className="profile-name">Mehmon</div>
+          <div className="profile-phone">Tizimga kiring</div>
         </div>
-        <div className="empty-state" style={{ paddingTop: 80 }}>
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.5">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-          <h3>Tizimga kiring</h3>
-          <p>Profil va buyurtmalar tarixini ko'rish uchun kiring</p>
-          <button className="empty-btn" onClick={onLogin}>Kirish</button>
+        <div className="profile-login">
+          <h3>Xush kelibsiz!</h3>
+          <p>Buyurtma berish va tarixni ko'rish uchun telefon raqamingizni kiriting</p>
+          <button className="login-btn" onClick={onLogin}>📱 Kirish</button>
         </div>
       </div>
     );
   }
 
+  const initials = (user.name || user.phone || '?').slice(0, 2).toUpperCase();
+
   return (
-    <div className="page">
-      <div className="profile-top">
-        <div className="profile-header">
-          <div>
-            <div className="profile-name">{user.name}</div>
-            <div className="profile-phone">{user.phone}</div>
+    <div className="profile-page">
+      {/* HEADER */}
+      <div className="profile-header">
+        <div className="profile-avatar">{initials}</div>
+        <div className="profile-name">{user.name || 'Foydalanuvchi'}</div>
+        <div className="profile-phone">{user.phone}</div>
+      </div>
+
+      {/* MENU */}
+      <div className="profile-menu">
+
+        <div className="profile-item">
+          <div className="profile-item-icon">📞</div>
+          <div className="profile-item-text">
+            <div className="profile-item-title">Aloqa</div>
+            <div className="profile-item-sub">{settings?.phone || '+998 93 272 2222'}</div>
           </div>
-          <div className="profile-actions">
-            <button className="profile-icon-btn" title="Tahrirlash">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
-            <button className="profile-icon-btn" title="Chiqish" onClick={onLogout}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-            </button>
+          <a href={`tel:${(settings?.phone || '+998932722222').replace(/\s/g, '')}`}
+             style={{ color: 'var(--teal)', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+            Qo'ng'iroq
+          </a>
+        </div>
+
+        <div className="profile-item">
+          <div className="profile-item-icon">📍</div>
+          <div className="profile-item-text">
+            <div className="profile-item-title">Bizning manzil</div>
+            <div className="profile-item-sub">{settings?.address || "Ko'kcha darvoza 340a"}</div>
+          </div>
+          <a href="https://maps.google.com/?q=41.3224858,69.2091613" target="_blank" rel="noreferrer"
+             style={{ color: 'var(--teal)', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+            Xarita
+          </a>
+        </div>
+
+        <div className="profile-item" onClick={() => window.open('https://www.instagram.com/rahmatchef.uz', '_blank')}>
+          <div className="profile-item-icon">📷</div>
+          <div className="profile-item-text">
+            <div className="profile-item-title">Instagram</div>
+            <div className="profile-item-sub">@rahmatchef.uz</div>
+          </div>
+          <span className="profile-item-arrow">›</span>
+        </div>
+
+        <div className="profile-item" onClick={() => window.open('https://t.me/rahmatchef', '_blank')}>
+          <div className="profile-item-icon">💬</div>
+          <div className="profile-item-text">
+            <div className="profile-item-title">Telegram bot</div>
+            <div className="profile-item-sub">Buyurtma va ma'lumotlar</div>
+          </div>
+          <span className="profile-item-arrow">›</span>
+        </div>
+
+        <div className="profile-item" onClick={onLogout} style={{ marginTop: 8 }}>
+          <div className="profile-item-icon" style={{ background: '#fee2e2' }}>🚪</div>
+          <div className="profile-item-text">
+            <div className="profile-item-title" style={{ color: 'var(--red)' }}>Chiqish</div>
           </div>
         </div>
       </div>
 
-      <div className="menu-separator" />
-
-      {MENU_ITEMS.map((item, i) => (
-        <div key={i} className="menu-item">
-          <span className="menu-item-icon">{item.icon}</span>
-          <span className="menu-item-label">{item.label}</span>
-          <svg className="menu-item-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="m9 18 6-6-6-6"/>
-          </svg>
-        </div>
-      ))}
-
-      <div className="powered-by">
+      {/* FOOTER */}
+      <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text3)', fontSize: 12 }}>
         © 2026 Rahmat Chef. Barcha huquqlar himoyalangan.
       </div>
     </div>
