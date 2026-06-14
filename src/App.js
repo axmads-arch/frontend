@@ -1,268 +1,118 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import {
-  SORT_OPTS, fmt, totalItems, totalPrice,
-  fetchProducts, fetchCategories, createOrder, fetchMyOrders
-} from './data/products';
-import Header from './components/Header';
-import Categories from './components/Categories';
-import BottomNav from './components/BottomNav';
-import HomePage from './pages/Home';
-import CartPage from './pages/Cart';
-import OrdersPage from './pages/Orders';
-import ProfilePage from './pages/Profile';
-import SortSheet from './components/SortSheet';
+import React, { useState, useEffect, useCallback } from 'react';
+import './App.css';
+import { fetchProducts, fetchCategories, fetchBanners, fetchSettings, getCart, saveCart, getUser, totalItems, totalPrice, fmt } from './data/api';
+import Home from './pages/Home';
+import Cart from './pages/Cart';
+import Orders from './pages/Orders';
+import Profile from './pages/Profile';
 import AuthSheet from './components/AuthSheet';
 import SearchPage from './components/SearchPage';
-import SuccessModal from './components/SuccessModal';
-
-function loadCart() {
-  try { return JSON.parse(localStorage.getItem('rc_cart') || '{}'); }
-  catch { return {}; }
-}
-
-function loadUser() {
-  try { return JSON.parse(localStorage.getItem('rc_user') || 'null'); }
-  catch { return null; }
-}
 
 export default function App() {
-  const [tab,         setTab]         = useState('home');
-  const [cat,         setCat]         = useState('all');
-  const [cart,        setCartRaw]     = useState(loadCart);
-  const [sortSel,     setSortSel]     = useState(null);
-  const [sortApplied, setSortApplied] = useState(null);
-  const [user,        setUserRaw]     = useState(loadUser);
-  const [delivery,    setDelivery]    = useState('Yetkazib berish');
-  const [showSort,    setShowSort]    = useState(false);
-  const [showAuth,    setShowAuth]    = useState(false);
-  const [showSearch,  setShowSearch]  = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [orders,      setOrders]      = useState([]);
-  const [products,    setProducts]    = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [addrBanner,  setAddrBanner]  = useState(true);
-  const [ordering,    setOrdering]    = useState(false);
+  const [tab, setTab] = useState('home');
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [banners, setBanners] = useState([]);
+  const [settings, setSettings] = useState({});
+  const [cart, setCart] = useState(getCart());
+  const [user, setUser] = useState(getUser());
+  const [loading, setLoading] = useState(true);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [toast, setToast] = useState('');
 
-  // Mahsulotlarni backenddan yuklash
-  useEffect(() => {
-    setLoading(true);
-    fetchProducts(cat)
-      .then(data => {
-        let list = Array.isArray(data) ? data : [];
-        if (sortApplied === 'az')        list = [...list].sort((a,b) => a.name.localeCompare(b.name));
-        if (sortApplied === 'cheap')     list = [...list].sort((a,b) => a.price - b.price);
-        if (sortApplied === 'expensive') list = [...list].sort((a,b) => b.price - a.price);
-        setProducts(list);
-      })
-      .catch(() => setProducts([]))
-      .finally(() => setLoading(false));
-  }, [cat, sortApplied]);
-
-  // Foydalanuvchi zakazlarini yuklash
-  useEffect(() => {
-    if (user?.phone && tab === 'orders') {
-      fetchMyOrders(user.phone)
-        .then(data => setOrders(Array.isArray(data) ? data : []))
-        .catch(() => setOrders([]));
-    }
-  }, [user, tab]);
-
-  const setCart = useCallback(fn => {
-    setCartRaw(prev => {
-      const next = typeof fn === 'function' ? fn(prev) : fn;
-      try { localStorage.setItem('rc_cart', JSON.stringify(next)); } catch {}
-      return next;
-    });
+  const showToast = useCallback((msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2000);
   }, []);
 
-  const setUser = useCallback(val => {
-    setUserRaw(val);
-    try { localStorage.setItem('rc_user', JSON.stringify(val)); } catch {}
+  useEffect(() => {
+    Promise.all([
+      fetchProducts(),
+      fetchCategories(),
+      fetchBanners(),
+      fetchSettings(),
+    ]).then(([prods, cats, bans, sets]) => {
+      setProducts(Array.isArray(prods) ? prods : []);
+      setCategories(Array.isArray(cats) ? cats : []);
+      setBanners(Array.isArray(bans) ? bans : []);
+      setSettings(sets || {});
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
+  const updateCart = (newCart) => { setCart(newCart); saveCart(newCart); };
+
+  const addToCart = (product) => {
+    const existing = cart.find(i => i.id === product.id);
+    const newCart = existing
+      ? cart.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i)
+      : [...cart, { id: product.id, qty: 1 }];
+    updateCart(newCart);
+    showToast('Savatchaga qo\'shildi ✓');
+  };
+
+  const removeFromCart = (productId) => {
+    const existing = cart.find(i => i.id === productId);
+    if (!existing) return;
+    const newCart = existing.qty === 1
+      ? cart.filter(i => i.id !== productId)
+      : cart.map(i => i.id === productId ? { ...i, qty: i.qty - 1 } : i);
+    updateCart(newCart);
+  };
+
+  const clearCart = () => updateCart([]);
   const cartCount = totalItems(cart);
   const cartTotal = totalPrice(cart, products);
 
-  const addToCart = useCallback(id => {
-    setCart(c => ({ ...c, [id]: (c[id] || 0) + 1 }));
-  }, [setCart]);
-
-  const remFromCart = useCallback(id => {
-    setCart(c => {
-      const qty = (c[id] || 0) - 1;
-      if (qty <= 0) { const { [id]: _, ...rest } = c; return rest; }
-      return { ...c, [id]: qty };
-    });
-  }, [setCart]);
-
-  const clearCart = () => {
-    if (window.confirm('Savatchani tozalash?')) setCart({});
-  };
-
-  const handleCat = id => {
-    if (id === 'filter') { setShowSort(true); return; }
-    setCat(id);
-  };
-
-  const handleCheckout = async (orderInfo) => {
-    if (!user) { setShowAuth(true); return; }
-    setOrdering(true);
-    try {
-      const items = Object.entries(cart).map(([id, qty]) => {
-        const p = products.find(p => p.id === Number(id));
-        return {
-          productId: Number(id),
-          quantity: qty,
-          price: p?.price || 0,
-        };
-      });
-
-      await createOrder({
-        customerName:  user.name,
-        phone:         user.phone,
-        address:       orderInfo.address || '',
-        deliveryType:  orderInfo.deliveryType || 'delivery',
-        paymentMethod: orderInfo.payment || 'cash',
-        comment:       orderInfo.comment || '',
-        items,
-      });
-
-      setCart({});
-      setShowSuccess(true);
-      setTab('home');
-    } catch (e) {
-      alert('Xatolik: ' + e.message);
-    } finally {
-      setOrdering(false);
-    }
-  };
-
-  const handleSuccessClose = () => {
-    setShowSuccess(false);
-    setTab('orders');
-  };
-
-  const handleVerifyOTP = (name, phone) => {
-    setUser({ name, phone });
-    setShowAuth(false);
-    setTab('profile');
-  };
-
-  const getFilteredProducts = (q = '') => {
-    if (!q.trim()) return products;
-    return products.filter(p =>
-      p.name.toLowerCase().includes(q.toLowerCase())
-    );
-  };
-
-  const catLabel = {
-    all: 'Barcha taomlar',
-    filter: 'Barcha taomlar',
-  }[cat] || cat;
-
   return (
     <div className="app">
-
-      {/* HOME */}
-      <div style={{ display: tab === 'home' ? 'block' : 'none' }}>
-        <Header
-          delivery={delivery}
-          onDeliveryChange={setDelivery}
-          onSearch={() => setShowSearch(true)}
-        />
-        <Categories cat={cat} onSelect={handleCat} />
-        <HomePage
-          products={products}
-          loading={loading}
-          catLabel={catLabel}
-          cart={cart}
-          onAdd={addToCart}
-          onRem={remFromCart}
-          addrBanner={addrBanner}
-          onCloseBanner={() => setAddrBanner(false)}
-          cartCount={cartCount}
-          cartTotal={cartTotal}
-          onOpenCart={() => setTab('cart')}
-          fmt={fmt}
-        />
-      </div>
-
-      {/* CART */}
+      {tab === 'home' && (
+        <Home products={products} categories={categories} banners={banners} settings={settings} loading={loading} cart={cart} onAdd={addToCart} onRemove={removeFromCart} onSearchOpen={() => setSearchOpen(true)} cartCount={cartCount} cartTotal={cartTotal} fmt={fmt} />
+      )}
       {tab === 'cart' && (
-        <CartPage
-          cart={cart}
-          products={products}
-          cartTotal={cartTotal}
-          onAdd={addToCart}
-          onRem={remFromCart}
-          onClear={clearCart}
-          onBack={() => setTab('home')}
-          onCheckout={handleCheckout}
-          ordering={ordering}
-          user={user}
-          onLogin={() => setShowAuth(true)}
-          fmt={fmt}
-        />
+        <Cart products={products} cart={cart} settings={settings} user={user} onAdd={addToCart} onRemove={removeFromCart} onClearCart={clearCart} onBack={() => setTab('home')} onOrderSuccess={() => { clearCart(); setTab('orders'); }} onAuthRequired={() => setAuthOpen(true)} showToast={showToast} fmt={fmt} />
       )}
-
-      {/* ORDERS */}
       {tab === 'orders' && (
-        <OrdersPage
-          orders={orders}
-          user={user}
-          onLogin={() => setShowAuth(true)}
-          fmt={fmt}
-        />
+        <Orders user={user} onAuthRequired={() => setAuthOpen(true)} fmt={fmt} />
       )}
-
-      {/* PROFILE */}
       {tab === 'profile' && (
-        <ProfilePage
-          user={user}
-          onLogin={() => setShowAuth(true)}
-          onLogout={() => setUser(null)}
-        />
+        <Profile user={user} onLogin={() => setAuthOpen(true)} onLogout={() => { setUser(null); localStorage.removeItem('rc_user'); localStorage.removeItem('rc_token'); }} settings={settings} />
       )}
 
-      {/* BOTTOM NAV */}
-      <BottomNav tab={tab} onNav={setTab} cartCount={cartCount} />
-
-      {/* SEARCH */}
-      {showSearch && (
-        <SearchPage
-          products={products}
-          cart={cart}
-          onAdd={addToCart}
-          onRem={remFromCart}
-          onClose={() => setShowSearch(false)}
-          fmt={fmt}
-          getFiltered={getFilteredProducts}
-        />
+      {cartCount > 0 && tab === 'home' && (
+        <button className="cart-sticky" onClick={() => setTab('cart')}>
+          <div className="cart-sticky-left">
+            <div className="cart-count-badge">{cartCount}</div>
+            <span className="cart-sticky-text">Savatcha</span>
+          </div>
+          <span className="cart-sticky-price">{fmt(cartTotal)}</span>
+        </button>
       )}
 
-      {/* SORT */}
-      {showSort && (
-        <SortSheet
-          opts={SORT_OPTS}
-          selected={sortSel}
-          onSelect={setSortSel}
-          onReset={() => setSortSel(null)}
-          onApply={() => { setSortApplied(sortSel); setShowSort(false); }}
-          onClose={() => setShowSort(false)}
-        />
-      )}
+      <nav className="bottom-nav">
+        <button className={`nav-item ${tab==='home'?'active':''}`} onClick={() => setTab('home')}>
+          <svg viewBox="0 0 24 24" fill={tab==='home'?'currentColor':'none'} stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span className="nav-label">Asosiy</span>
+        </button>
+        <button className={`nav-item ${tab==='cart'?'active':''}`} onClick={() => setTab('cart')}>
+          {cartCount > 0 && <span className="nav-badge">{cartCount}</span>}
+          <svg viewBox="0 0 24 24" fill={tab==='cart'?'currentColor':'none'} stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+          <span className="nav-label">Savatcha</span>
+        </button>
+        <button className={`nav-item ${tab==='orders'?'active':''}`} onClick={() => setTab('orders')}>
+          <svg viewBox="0 0 24 24" fill={tab==='orders'?'currentColor':'none'} stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span className="nav-label">Buyurtmalar</span>
+        </button>
+        <button className={`nav-item ${tab==='profile'?'active':''}`} onClick={() => setTab('profile')}>
+          <svg viewBox="0 0 24 24" fill={tab==='profile'?'currentColor':'none'} stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span className="nav-label">Profil</span>
+        </button>
+      </nav>
 
-      {/* AUTH */}
-      {showAuth && (
-        <AuthSheet
-          onClose={() => setShowAuth(false)}
-          onVerify={handleVerifyOTP}
-        />
-      )}
-
-      {/* SUCCESS */}
-      {showSuccess && <SuccessModal onClose={handleSuccessClose} />}
-
+      {authOpen && <AuthSheet onClose={() => setAuthOpen(false)} onSuccess={(u) => { setUser(u); setAuthOpen(false); showToast('Xush kelibsiz! 👋'); }} />}
+      {searchOpen && <SearchPage products={products} cart={cart} onAdd={addToCart} onRemove={removeFromCart} onClose={() => setSearchOpen(false)} fmt={fmt} />}
+      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }
