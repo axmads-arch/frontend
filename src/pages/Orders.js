@@ -1,33 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchMyOrders } from '../data/api';
 
-const BADGE = {
-  PENDING:    { cls: 'badge-new',  label: 'Yangi'       },
-  PREPARING:  { cls: 'badge-prep', label: 'Tayyorlanmoqda' },
-  READY:      { cls: 'badge-way',  label: 'Tayyor'      },
-  DELIVERING: { cls: 'badge-way',  label: 'Yo\'lda'     },
-  DELIVERED:  { cls: 'badge-done', label: 'Yetkazildi'  },
-  CANCELLED:  { cls: 'badge-new',  label: 'Bekor qilindi'},
+const STATUS = {
+  new: { label: 'Yangi', cls: 'st-new' },
+  preparing: { label: 'Tayyorlanmoqda', cls: 'st-preparing' },
+  ready: { label: 'Tayyor', cls: 'st-ready' },
+  delivering: { label: 'Yetkazilmoqda', cls: 'st-delivering' },
+  delivered: { label: 'Yetkazildi', cls: 'st-delivered' },
+  cancelled: { label: 'Bekor', cls: 'st-cancelled' },
 };
 
-export default function OrdersPage({ orders, user, onLogin, fmt }) {
+const PAY = { cash: 'Naqd', click: 'Click', payme: 'Payme', uzum: 'Uzum', card: 'Karta' };
+const DEL = { delivery: 'Yetkazib berish', pickup: 'Olib ketish' };
+
+export default function Orders({ user, onAuthRequired, fmt }) {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    fetchMyOrders(user.phone).then(data => {
+      setOrders(Array.isArray(data) ? data : []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [user]);
+
   if (!user) {
     return (
       <div className="page">
         <div className="page-header">
-          <div style={{ width: 36 }} />
           <span className="page-title">Buyurtmalar</span>
-          <div style={{ width: 36 }} />
         </div>
-        <div className="empty-state" style={{ paddingTop: 80 }}>
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
-          <h3>Buyurtmalarni ko'rish uchun kiring</h3>
-          <p>Telefon raqamingiz bilan kiring</p>
-          <button className="empty-btn" onClick={onLogin}>Kirish</button>
+        <div className="empty-state" style={{ marginTop: 40 }}>
+          <div className="empty-state-icon">📋</div>
+          <h3>Buyurtmalar tarixi</h3>
+          <p>Ko'rish uchun tizimga kiring</p>
+          <button className="login-btn" style={{ marginTop: 20 }} onClick={onAuthRequired}>Kirish</button>
         </div>
       </div>
     );
@@ -36,39 +44,47 @@ export default function OrdersPage({ orders, user, onLogin, fmt }) {
   return (
     <div className="page">
       <div className="page-header">
-        <div style={{ width: 36 }} />
         <span className="page-title">Buyurtmalar</span>
-        <div style={{ width: 36 }} />
       </div>
-
-      {orders.length === 0 ? (
-        <div className="empty-state" style={{ paddingTop: 80 }}>
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
+      {loading ? (
+        <div style={{ padding: 20 }}>
+          {[1,2,3].map(i => (
+            <div key={i} style={{ background: 'white', borderRadius: 16, padding: 14, marginBottom: 12 }}>
+              <div className="skeleton" style={{ height: 16, width: '60%', marginBottom: 10 }} />
+              <div className="skeleton" style={{ height: 12, width: '80%', marginBottom: 6 }} />
+              <div className="skeleton" style={{ height: 12, width: '40%' }} />
+            </div>
+          ))}
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="empty-state" style={{ marginTop: 40 }}>
+          <div className="empty-state-icon">🛍️</div>
           <h3>Buyurtmalar yo'q</h3>
-          <p>Siz hali buyurtma bermadingiz</p>
+          <p>Hali buyurtma bermagansiz</p>
         </div>
       ) : (
-        <div style={{ paddingBottom: 20 }}>
-          {orders.map((o, i) => {
-            const b = BADGE[o.status] || BADGE.PENDING;
-            const itemsList = o.items?.map(item =>
-              `${item.product?.name || 'Mahsulot'} x${item.quantity}`
-            ).join(', ');
+        <div className="orders-list">
+          {orders.map(o => {
+            const st = STATUS[o.status] || { label: o.status, cls: 'st-new' };
+            const date = new Date(o.createdAt).toLocaleString('uz-UZ', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+            const itemsText = o.items?.map(i => `${i.product?.name || 'Mahsulot'} x${i.quantity}`).join(', ') || '';
             return (
-              <div key={i} className="order-card">
-                <div className="order-head">
-                  <span className="order-id">#{o.id}</span>
-                  <span className={`order-badge ${b.cls}`}>{b.label}</span>
+              <div key={o.id} className="order-card">
+                <div className="order-card-head">
+                  <div>
+                    <div className="order-num">Buyurtma #{o.id}</div>
+                    <div className="order-date">{date}</div>
+                  </div>
+                  <span className={`status-pill ${st.cls}`}>{st.label}</span>
                 </div>
-                <div className="order-items">{itemsList}</div>
-                <div className="order-total">{fmt(o.total)}</div>
-                <div className="order-date">
-                  {new Date(o.createdAt).toLocaleString('ru')}
+                <div className="order-items-text">{itemsText}</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>
+                  {DEL[o.deliveryType] || o.deliveryType} · {PAY[o.paymentMethod] || o.paymentMethod}
+                  {o.address ? ` · ${o.address}` : ''}
+                </div>
+                <div className="order-total-row">
+                  <span style={{ fontSize: 13, color: 'var(--text2)' }}>Jami summa</span>
+                  <span className="order-total-price">{fmt(o.totalPrice)}</span>
                 </div>
               </div>
             );
