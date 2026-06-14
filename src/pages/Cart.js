@@ -1,253 +1,207 @@
 import React, { useState } from 'react';
+import { createOrder } from '../data/api';
 
-const NoImg = () => (
-  <div style={{
-    width:'100%', height:'100%',
-    display:'flex', alignItems:'center',
-    justifyContent:'center', background:'#f4f4f4'
-  }}>
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5">
-      <rect x="3" y="3" width="18" height="18" rx="2"/>
-      <circle cx="8.5" cy="8.5" r="1.5"/>
-      <polyline points="21 15 16 10 5 21"/>
-    </svg>
-  </div>
-);
+const CATS_ICONS = { 'Cheesecake': '🍰', 'Medovik': '🍯', 'Tort': '🎂', 'Kofe': '☕', 'Choy': '🍵', 'Ichimlik': '🥤' };
 
 const PAYMENTS = [
-  { id:'cash',  label:'Naqd',       icon:'💵' },
-  { id:'click', label:'Click',      icon:'📱' },
-  { id:'payme', label:'Payme',      icon:'💳' },
-  { id:'uzum',  label:'Uzum Bank',  icon:'🏦' },
-  { id:'card',  label:'Karta',      icon:'💴' },
+  { id: 'cash', icon: '💵', label: 'Naqd' },
+  { id: 'click', icon: '📱', label: 'Click' },
+  { id: 'payme', icon: '💳', label: 'Payme' },
+  { id: 'uzum', icon: '🟣', label: 'Uzum' },
+  { id: 'card', icon: '🏦', label: 'Karta' },
 ];
 
-export default function CartPage({
-  cart, products, cartTotal,
-  onAdd, onRem, onClear, onBack,
-  onCheckout, ordering, user, onLogin, fmt
-}) {
-  const [address,      setAddress]      = useState('');
-  const [payment,      setPayment]      = useState('cash');
+export default function Cart({ products, cart, settings, user, onAdd, onRemove, onClearCart, onBack, onOrderSuccess, onAuthRequired, showToast, fmt }) {
   const [deliveryType, setDeliveryType] = useState('delivery');
-  const [comment,      setComment]      = useState('');
+  const [address, setAddress] = useState('');
+  const [comment, setComment] = useState('');
+  const [payment, setPayment] = useState('cash');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const items = Object.entries(cart).filter(([,qty]) => qty > 0);
+  const cartItems = cart.map(c => ({ ...c, product: products.find(p => p.id === c.id) })).filter(c => c.product);
+  const subtotal = cartItems.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const deliveryPrice = deliveryType === 'delivery' ? (settings?.deliveryPrice || 10000) : 0;
+  const total = subtotal + deliveryPrice;
 
-  const handleOrder = () => {
-    if (!user) { onLogin(); return; }
-    if (deliveryType === 'delivery' && !address.trim()) {
-      alert('Yetkazib berish manzilini kiriting');
-      return;
+  const placeOrder = async () => {
+    if (!user) { onAuthRequired(); return; }
+    if (deliveryType === 'delivery' && !address.trim()) { showToast('Manzilni kiriting!'); return; }
+
+    setLoading(true);
+    try {
+      const result = await createOrder({
+        customerPhone: user.phone,
+        customerName: user.name || user.phone,
+        deliveryType,
+        paymentMethod: payment,
+        address: deliveryType === 'delivery' ? address : '',
+        comment,
+        items: cart.map(i => ({ productId: i.id, quantity: i.qty, price: products.find(p=>p.id===i.id)?.price || 0 })),
+      });
+      if (result.id) {
+        setSuccess(true);
+      } else {
+        showToast('Xatolik: ' + (result.error || 'Qayta urinib ko\'ring'));
+      }
+    } catch (e) {
+      showToast('Server bilan bog\'lanishda xatolik');
     }
-    onCheckout({ address, payment, deliveryType, comment });
+    setLoading(false);
   };
 
+  if (success) {
+    return (
+      <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Buyurtma qabul qilindi!</h2>
+          <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 8 }}>Tez orada operator siz bilan bog'lanadi</p>
+          <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 28 }}>📞 {settings?.phone || '+998 93 272 2222'}</p>
+          <button className="order-btn" style={{ maxWidth: 280, margin: '0 auto' }} onClick={onOrderSuccess}>
+            Buyurtmalarni ko'rish
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="page">
+        <div className="page-header">
+          <button className="back-btn" onClick={onBack}>←</button>
+          <span className="page-title">Savatcha</span>
+        </div>
+        <div className="empty-cart">
+          <div className="empty-cart-icon">🛒</div>
+          <h3>Savatcha bo'sh</h3>
+          <p>Mahsulotlarni qo'shib boshlang</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="page">
+    <div className="cart-page">
       <div className="page-header">
-        <button className="page-back" onClick={onBack}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
+        <button className="back-btn" onClick={onBack}>←</button>
         <span className="page-title">Savatcha</span>
-        <button className="page-action" onClick={onClear}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14H6L5 6"/>
-            <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-          </svg>
+        <button onClick={onClearCart} style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          Tozalash
         </button>
       </div>
 
-      {items.length === 0 ? (
-        <div className="empty-state" style={{ paddingTop:80 }}>
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.5">
-            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-          </svg>
-          <h3>Savatcha bo'sh</h3>
-          <p>Menyudan taomlar qo'shing</p>
-          <button className="empty-btn" onClick={onBack}>Menyuga</button>
+      {/* CART ITEMS */}
+      <div className="cart-items">
+        {cartItems.map(item => (
+          <div key={item.id} className="cart-item">
+            {item.product.image ? (
+              <img className="cart-item-img" src={item.product.image} alt={item.product.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+            ) : null}
+            <div className="cart-item-img-placeholder" style={{ display: item.product.image ? 'none' : 'flex' }}>
+              {CATS_ICONS[item.product.category] || '🍰'}
+            </div>
+            <div className="cart-item-info">
+              <div className="cart-item-name">{item.product.name}</div>
+              <div className="cart-item-price">{fmt(item.product.price * item.qty)}</div>
+            </div>
+            <div className="cart-item-qty">
+              <button className="qty-btn2" onClick={() => onRemove(item.id)}>−</button>
+              <span className="qty-num2">{item.qty}</span>
+              <button className="qty-btn2" onClick={() => onAdd(item.product)}>+</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CHECKOUT */}
+      <div className="checkout-section">
+
+        {/* Delivery type */}
+        <div className="checkout-card">
+          <div className="checkout-title">Yetkazish turi</div>
+          <div className="delivery-toggle">
+            <div className={`delivery-opt ${deliveryType === 'delivery' ? 'active' : ''}`} onClick={() => setDeliveryType('delivery')}>
+              <div className="delivery-opt-icon">🚗</div>
+              <div className="delivery-opt-label">Yetkazib berish</div>
+              <div className="delivery-opt-sub">{fmt(settings?.deliveryPrice || 10000)}</div>
+            </div>
+            <div className={`delivery-opt ${deliveryType === 'pickup' ? 'active' : ''}`} onClick={() => setDeliveryType('pickup')}>
+              <div className="delivery-opt-icon">🏃</div>
+              <div className="delivery-opt-label">Olib ketish</div>
+              <div className="delivery-opt-sub">Bepul</div>
+            </div>
+          </div>
         </div>
-      ) : (
-        <>
-          <div style={{ paddingBottom:320 }}>
 
-            {/* Mahsulotlar */}
-            {items.map(([id, qty]) => {
-              const p = products.find(p => p.id === Number(id));
-              if (!p) return null;
-              return (
-                <div key={id} className="cart-item">
-                  <div className="ci-img">
-                    {p.image
-                      ? <img src={p.image} alt={p.name}
-                          style={{ width:'100%', height:'100%', objectFit:'cover' }}
-                          onError={e => { e.target.style.display='none'; }}
-                        />
-                      : <NoImg />
-                    }
-                  </div>
-                  <div className="ci-info">
-                    <div className="ci-name">{p.name}</div>
-                    <div className="ci-price">{fmt(p.price * qty)}</div>
-                    <div style={{ fontSize:11, color:'var(--muted)' }}>
-                      {fmt(p.price)} × {qty}
-                    </div>
-                  </div>
-                  <div className="ci-ctrl">
-                    <button className="ci-btn" onClick={() => onRem(p.id)}>−</button>
-                    <span className="ci-num">{qty}</span>
-                    <button className="ci-btn" onClick={() => onAdd(p.id)}>+</button>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Yetkazish turi */}
-            <div style={{ padding:'16px 16px 0' }}>
-              <div style={{ fontSize:13, fontWeight:700, color:'var(--muted)', marginBottom:10, textTransform:'uppercase', letterSpacing:'.5px' }}>
-                Yetkazish turi
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                {[
-                  { id:'delivery', label:'🚗 Yetkazib berish' },
-                  { id:'pickup',   label:'🏃 Olib ketish'     },
-                ].map(d => (
-                  <button
-                    key={d.id}
-                    onClick={() => setDeliveryType(d.id)}
-                    style={{
-                      padding:'13px 10px',
-                      borderRadius:'var(--radius)',
-                      border: deliveryType === d.id
-                        ? '2px solid var(--teal)'
-                        : '1.5px solid var(--border)',
-                      background: deliveryType === d.id
-                        ? 'var(--teal-lt)'
-                        : 'var(--white)',
-                      color: deliveryType === d.id
-                        ? 'var(--teal)'
-                        : 'var(--sub)',
-                      fontSize:13, fontWeight:700,
-                      cursor:'pointer',
-                      fontFamily:'Inter,sans-serif',
-                      transition:'all .2s',
-                    }}
-                  >
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Manzil */}
-            {deliveryType === 'delivery' && (
-              <div style={{ padding:'12px 16px 0' }}>
-                <div style={{ fontSize:13, fontWeight:700, color:'var(--muted)', marginBottom:8, textTransform:'uppercase', letterSpacing:'.5px' }}>
-                  Yetkazib berish manzili
-                </div>
-                <input
-                  style={{
-                    width:'100%', padding:'13px 14px',
-                    border:'1.5px solid var(--border)',
-                    borderRadius:'var(--radius)',
-                    fontSize:14, outline:'none',
-                    fontFamily:'Inter,sans-serif',
-                    color:'var(--text)',
-                    transition:'border .2s',
-                  }}
-                  placeholder="Ko'cha, uy raqami, kvartira..."
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  onFocus={e => e.target.style.borderColor='var(--teal)'}
-                  onBlur={e => e.target.style.borderColor='var(--border)'}
-                />
-              </div>
-            )}
-
-            {/* Izoh */}
-            <div style={{ padding:'12px 16px 0' }}>
-              <div style={{ fontSize:13, fontWeight:700, color:'var(--muted)', marginBottom:8, textTransform:'uppercase', letterSpacing:'.5px' }}>
-                Izoh (ixtiyoriy)
-              </div>
-              <textarea
-                style={{
-                  width:'100%', padding:'13px 14px',
-                  border:'1.5px solid var(--border)',
-                  borderRadius:'var(--radius)',
-                  fontSize:14, outline:'none',
-                  fontFamily:'Inter,sans-serif',
-                  color:'var(--text)',
-                  resize:'none', height:80,
-                  transition:'border .2s',
-                }}
-                placeholder="Masalan: piyozsiz, achchiqroq..."
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-                onFocus={e => e.target.style.borderColor='var(--teal)'}
-                onBlur={e => e.target.style.borderColor='var(--border)'}
-              />
-            </div>
-
-            {/* To'lov */}
-            <div style={{ padding:'12px 16px 0' }}>
-              <div style={{ fontSize:13, fontWeight:700, color:'var(--muted)', marginBottom:8, textTransform:'uppercase', letterSpacing:'.5px' }}>
-                To'lov usuli
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                {PAYMENTS.map(pay => (
-                  <button
-                    key={pay.id}
-                    onClick={() => setPayment(pay.id)}
-                    style={{
-                      padding:'12px',
-                      borderRadius:'var(--radius)',
-                      border: payment === pay.id
-                        ? '2px solid var(--teal)'
-                        : '1.5px solid var(--border)',
-                      background: payment === pay.id
-                        ? 'var(--teal-lt)'
-                        : 'var(--white)',
-                      color: payment === pay.id
-                        ? 'var(--teal)'
-                        : 'var(--sub)',
-                      fontSize:13, fontWeight:600,
-                      cursor:'pointer',
-                      display:'flex',
-                      alignItems:'center',
-                      gap:6,
-                      fontFamily:'Inter,sans-serif',
-                      transition:'all .2s',
-                    }}
-                  >
-                    <span>{pay.icon}</span> {pay.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
+        {/* Address */}
+        {deliveryType === 'delivery' && (
+          <div className="checkout-card">
+            <label className="field-label">📍 Yetkazib berish manzili</label>
+            <input
+              className="field-input"
+              placeholder="Ko'cha, uy raqami, mo'ljal..."
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+            />
           </div>
+        )}
 
-          {/* Footer */}
-          <div className="cart-footer">
-            <div className="cf-info">
-              <span className="cf-label">Jami summa</span>
-              <span className="cf-sum">{fmt(cartTotal)}</span>
-            </div>
-            <button
-              className="cf-btn"
-              onClick={handleOrder}
-              disabled={ordering}
-              style={{ opacity: ordering ? 0.7 : 1 }}
-            >
-              {ordering ? 'Yuborilmoqda...' : 'Buyurtma berish'}
-            </button>
+        {/* Comment */}
+        <div className="checkout-card">
+          <label className="field-label">💬 Izoh (ixtiyoriy)</label>
+          <textarea
+            className="field-input"
+            style={{ resize: 'none', minHeight: 72 }}
+            placeholder="Masalan: qo'ng'iroq qilmang, qovoqsiz..."
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+          />
+        </div>
+
+        {/* Payment */}
+        <div className="checkout-card">
+          <div className="checkout-title">To'lov usuli</div>
+          <div className="payment-grid">
+            {PAYMENTS.map(p => (
+              <div key={p.id} className={`pay-opt ${payment === p.id ? 'active' : ''}`} onClick={() => setPayment(p.id)}>
+                <span className="pay-icon">{p.icon}</span>
+                <span className="pay-label">{p.label}</span>
+              </div>
+            ))}
           </div>
-        </>
-      )}
+        </div>
+
+        {/* Price summary */}
+        <div className="checkout-card">
+          <div className="checkout-title">Hisob</div>
+          <div className="price-row">
+            <span>Mahsulotlar ({cart.reduce((s,i)=>s+i.qty,0)} ta)</span>
+            <span className="price-val">{fmt(subtotal)}</span>
+          </div>
+          {deliveryType === 'delivery' && (
+            <div className="price-row">
+              <span>Yetkazib berish</span>
+              <span className="price-val">{fmt(deliveryPrice)}</span>
+            </div>
+          )}
+          <div className="price-row total">
+            <span>Jami</span>
+            <span className="price-val">{fmt(total)}</span>
+          </div>
+        </div>
+
+        {!user && (
+          <div style={{ background: 'var(--teal-light)', borderRadius: 12, padding: '12px 14px', marginBottom: 10, fontSize: 13, color: 'var(--teal)', fontWeight: 500 }}>
+            ⚠️ Buyurtma berish uchun tizimga kiring
+          </div>
+        )}
+
+        <button className="order-btn" onClick={placeOrder} disabled={loading}>
+          {loading ? 'Yuklanmoqda...' : `Buyurtma berish — ${fmt(total)}`}
+        </button>
+      </div>
     </div>
   );
 }
