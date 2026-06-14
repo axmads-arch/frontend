@@ -1,67 +1,84 @@
-import React, { useState, useRef, useEffect } from 'react';
-import ProductCard from './ProductCard';
+import React, { useState } from 'react';
 
-export default function SearchPage({ products, cart, onAdd, onRem, onClose, fmt, getFiltered }) {
+const CATS_ICONS = { 'Cheesecake': '🍰', 'Medovik': '🍯', 'Tort': '🎂', 'Kofe': '☕', 'Choy': '🍵', 'Ichimlik': '🥤' };
+
+export default function SearchPage({ products, cart, onAdd, onRemove, onClose, fmt }) {
   const [query, setQuery] = useState('');
-  const inputRef = useRef();
 
-  useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 100);
-  }, []);
+  const results = query.trim()
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(query.toLowerCase()) ||
+        p.category.toLowerCase().includes(query.toLowerCase())
+      )
+    : [];
 
-  const results = getFiltered(query);
+  const getQty = (id) => { const i = cart.find(c => c.id === id); return i ? i.qty : 0; };
 
   return (
-    <div className="search-page">
+    <div className="search-overlay">
       <div className="search-header">
-        <button className="search-back" onClick={onClose}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
         <div className="search-input-wrap">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
+          <span className="search-icon">🔍</span>
           <input
-            ref={inputRef}
             className="search-input"
-            type="text"
-            placeholder="Tezkor qidiruv"
+            placeholder="Mahsulot qidirish..."
             value={query}
             onChange={e => setQuery(e.target.value)}
+            autoFocus
           />
-          {query && (
-            <button
-              onClick={() => setQuery('')}
-              style={{ background:'none', border:'none', cursor:'pointer', color:'#aaa', lineHeight:1 }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M18 6 6 18M6 6l12 12"/>
-              </svg>
-            </button>
-          )}
         </div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--teal)', fontSize: 15, fontWeight: 600, cursor: 'pointer', white_space: 'nowrap' }}>
+          Bekor
+        </button>
       </div>
 
-      <div className="search-results">
-        {!query.trim() ? (
-          <div className="search-empty">Taom nomini kiriting</div>
-        ) : results.length === 0 ? (
-          <div className="search-empty">«{query}» bo'yicha hech narsa topilmadi</div>
-        ) : (
-          results.map(p => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              qty={cart[p.id] || 0}
-              onAdd={onAdd}
-              onRem={onRem}
-              fmt={fmt}
-            />
-          ))
-        )}
-      </div>
+      {query && results.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">😕</div>
+          <h3>Topilmadi</h3>
+          <p>"{query}" bo'yicha natija yo'q</p>
+        </div>
+      ) : results.length > 0 ? (
+        <div className="product-grid" style={{ padding: '0 4px' }}>
+          {results.map(p => {
+            const qty = getQty(p.id);
+            return (
+              <div key={p.id} className="product-card">
+                <div className="product-img-wrap">
+                  {p.image ? (
+                    <img className="product-img" src={p.image} alt={p.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                  ) : null}
+                  <div className="product-img-placeholder" style={{ display: p.image ? 'none' : 'flex' }}>
+                    {CATS_ICONS[p.category] || '🍰'}
+                  </div>
+                </div>
+                <div className="product-body">
+                  <div className="product-name">{p.name}</div>
+                  <div className="product-cat">{p.category}</div>
+                  <div className="product-footer">
+                    <div className="product-price">{fmt(p.price)}</div>
+                    {qty === 0 ? (
+                      <button className="add-btn" onClick={() => onAdd(p)}>+</button>
+                    ) : (
+                      <div className="qty-control">
+                        <button className="qty-btn" onClick={() => onRemove(p.id)}>−</button>
+                        <span className="qty-num">{qty}</span>
+                        <button className="qty-btn" onClick={() => onAdd(p)}>+</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <div className="empty-state-icon">🔍</div>
+          <h3>Qidirish</h3>
+          <p>Mahsulot nomi yoki kategoriyasini yozing</p>
+        </div>
+      )}
     </div>
   );
 }
