@@ -474,15 +474,15 @@ function toast(msg, color = '#1a1a2e') {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ── IMGBB UPLOAD ──
+// ── IMGBB UPLOAD (FIXED) ──
 const IMGBB_KEY = 'b59b77453337b7d29c865ed75ad39305';
 
 async function uploadToImgBB(file) {
   const formData = new FormData();
   formData.append('image', file);
-  formData.append('key', IMGBB_KEY);
+  // KEY URL da, FormData da emas — bu asosiy fix!
   try {
-    const r = await fetch('https://api.imgbb.com/1/upload', {
+    const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
       method: 'POST',
       body: formData
     });
@@ -498,7 +498,6 @@ async function handleImg(input) {
   const file = input.files[0];
   if (!file) return;
 
-  // Preview ko'rsatish
   const reader = new FileReader();
   reader.onload = e => {
     const prev = document.getElementById('imgPreview');
@@ -509,9 +508,8 @@ async function handleImg(input) {
   };
   reader.readAsDataURL(file);
 
-  // ImgBB ga yuklash
-  const uploadBtn = document.getElementById('uploadPrompt');
-  uploadBtn.innerHTML = '<div class="img-upload-icon">⏳</div><div class="img-upload-text">Yuklanmoqda...</div>';
+  const uploadPrompt = document.getElementById('uploadPrompt');
+  uploadPrompt.innerHTML = '<div class="img-upload-icon">⏳</div><div class="img-upload-text">Yuklanmoqda...</div>';
 
   const url = await uploadToImgBB(file);
   if (url) {
@@ -521,7 +519,7 @@ async function handleImg(input) {
   } else {
     toast('Rasm yuklashda xatolik — URL qo\'lda kiriting', '#e53935');
   }
-  uploadBtn.innerHTML = '<div class="img-upload-icon">📷</div><div class="img-upload-text">Telefondan rasm tanlang<br><small>JPG, PNG — to\'liq sifatda</small></div>';
+  uploadPrompt.innerHTML = '<div class="img-upload-icon">📷</div><div class="img-upload-text">Telefondan rasm tanlang<br><small>JPG, PNG — to\'liq sifatda</small></div>';
 }
 
 function removeImg() {
