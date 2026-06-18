@@ -478,18 +478,27 @@ function toast(msg, color = '#1a1a2e') {
 const IMGBB_KEY = 'b59b77453337b7d29c865ed75ad39305';
 
 async function uploadToImgBB(file) {
-  const formData = new FormData();
-  formData.append('image', file);
-  // KEY URL da, FormData da emas — bu asosiy fix!
   try {
-    const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+    // Faylni base64 ga aylantiramiz
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // Backend orqali yuboramiz
+    const r = await fetch(`${API}/upload`, {
       method: 'POST',
-      body: formData
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64 })
     });
     const d = await r.json();
-    if (d.success) return d.data.url;
+    if (d.url) return d.url;
+    console.error('ImgBB xato:', d.error);
     return null;
   } catch(e) {
+    console.error('Upload xato:', e);
     return null;
   }
 }
