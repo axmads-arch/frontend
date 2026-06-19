@@ -3,11 +3,12 @@ import { LOGO_URL } from '../data/api';
 
 const ICONS = { 'Cheesecake':'🍰','Medovik':'🍯','Tort':'🎂','Kofe':'☕','Choy':'🍵','Ichimlik':'🥤','Barchasi':'🍽️' };
 
-export default function Home({ products, categories, banners, settings, loading, cart, onAdd, onRemove, onSearchOpen, cartCount, cartTotal, fmt }) {
+export default function Home({ products, categories, banners, settings, loading, cart, onAdd, onRemove, onSearchOpen, cartCount, cartTotal, fmt, favorites, onToggleFavorite }) {
   const [activeCat, setActiveCat] = useState('Barchasi');
   const allCats = ['Barchasi', ...categories];
   const filtered = activeCat === 'Barchasi' ? products : products.filter(p => p.category === activeCat);
   const getQty = (id) => { const i = cart.find(c => c.id === id); return i ? i.qty : 0; };
+  const isFav = (id) => favorites && favorites.includes(id);
 
   return (
     <div className="page">
@@ -46,6 +47,45 @@ export default function Home({ products, categories, banners, settings, loading,
         )}
       </div>
 
+      {favorites && favorites.length > 0 && (
+        <div className="section" style={{ paddingTop: 14 }}>
+          <div className="section-title">❤️ Sevimlilar</div>
+          <div className="product-grid">
+            {products.filter(p => favorites.includes(p.id)).map(p => {
+              const qty = getQty(p.id);
+              return (
+                <div key={p.id} className="product-card">
+                  <div className="product-img-wrap">
+                    {p.image && <img className="product-img" src={p.image} alt={p.name} onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex';}} />}
+                    <div className="product-img-placeholder" style={{display:p.image?'none':'flex'}}>{ICONS[p.category]||'🍰'}</div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onToggleFavorite(p.id); }}
+                      style={{position:'absolute',top:8,right:8,background:'rgba(255,255,255,0.9)',border:'none',borderRadius:'50%',width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:14}}
+                    >❤️</button>
+                  </div>
+                  <div className="product-body">
+                    <div className="product-name">{p.name}</div>
+                    <div className="product-cat">{p.category}</div>
+                    <div className="product-footer">
+                      <div className="product-price">{fmt(p.price)}</div>
+                      {qty === 0 ? (
+                        <button className="add-btn" onClick={() => onAdd(p)}>+</button>
+                      ) : (
+                        <div className="qty-control">
+                          <button className="qty-btn" onClick={() => onRemove(p.id)}>−</button>
+                          <span className="qty-num">{qty}</span>
+                          <button className="qty-btn" onClick={() => onAdd(p)}>+</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="cats-wrap">
         <div className="cats-scroll">
           {allCats.map(cat => (
@@ -78,6 +118,10 @@ export default function Home({ products, categories, banners, settings, loading,
                   <div className="product-img-wrap">
                     {p.image && <img className="product-img" src={p.image} alt={p.name} onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex';}} />}
                     <div className="product-img-placeholder" style={{display:p.image?'none':'flex'}}>{ICONS[p.category]||'🍰'}</div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onToggleFavorite(p.id); }}
+                      style={{position:'absolute',top:8,right:8,background:'rgba(255,255,255,0.9)',border:'none',borderRadius:'50%',width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:14}}
+                    >{isFav(p.id) ? '❤️' : '🤍'}</button>
                   </div>
                   <div className="product-body">
                     <div className="product-name">{p.name}</div>
