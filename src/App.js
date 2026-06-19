@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import { fetchProducts, fetchCategories, fetchBanners, fetchSettings, getCart, saveCart, getUser, totalItems, totalPrice, fmt } from './data/api';
+import { fetchProducts, fetchCategories, fetchBanners, fetchSettings, getCart, saveCart, getUser, totalItems, totalPrice, fmt, getFavorites, toggleFavorite } from './data/api';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
@@ -16,6 +16,7 @@ export default function App() {
   const [settings, setSettings] = useState({});
   const [cart, setCart] = useState(getCart());
   const [user, setUser] = useState(getUser());
+  const [favorites, setFavorites] = useState(getFavorites());
   const [loading, setLoading] = useState(true);
   const [authOpen, setAuthOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -61,6 +62,12 @@ export default function App() {
     updateCart(newCart);
   };
 
+  const handleToggleFavorite = (productId) => {
+    const newFavs = toggleFavorite(productId, favorites);
+    setFavorites(newFavs);
+    showToast(newFavs.includes(productId) ? '❤️ Sevimlilarga qo\'shildi' : '🤍 Sevimlilardan olib tashlandi');
+  };
+
   const clearCart = () => updateCart([]);
   const cartCount = totalItems(cart);
   const cartTotal = totalPrice(cart, products);
@@ -68,7 +75,7 @@ export default function App() {
   return (
     <div className="app">
       {tab === 'home' && (
-        <Home products={products} categories={categories} banners={banners} settings={settings} loading={loading} cart={cart} onAdd={addToCart} onRemove={removeFromCart} onSearchOpen={() => setSearchOpen(true)} cartCount={cartCount} cartTotal={cartTotal} fmt={fmt} />
+        <Home products={products} categories={categories} banners={banners} settings={settings} loading={loading} cart={cart} onAdd={addToCart} onRemove={removeFromCart} onSearchOpen={() => setSearchOpen(true)} cartCount={cartCount} cartTotal={cartTotal} fmt={fmt} favorites={favorites} onToggleFavorite={handleToggleFavorite} />
       )}
       {tab === 'cart' && (
         <Cart products={products} cart={cart} settings={settings} user={user} onAdd={addToCart} onRemove={removeFromCart} onClearCart={clearCart} onBack={() => setTab('home')} onOrderSuccess={() => { clearCart(); setTab('orders'); }} onAuthRequired={() => setAuthOpen(true)} showToast={showToast} fmt={fmt} />
@@ -77,7 +84,7 @@ export default function App() {
         <Orders user={user} onAuthRequired={() => setAuthOpen(true)} fmt={fmt} />
       )}
       {tab === 'profile' && (
-        <Profile user={user} onLogin={() => setAuthOpen(true)} onLogout={() => { setUser(null); localStorage.removeItem('rc_user'); localStorage.removeItem('rc_token'); }} settings={settings} />
+        <Profile user={user} onLogin={() => setAuthOpen(true)} onLogout={() => { setUser(null); localStorage.removeItem('rc_user'); localStorage.removeItem('rc_token'); }} settings={settings} favorites={favorites} products={products} onAdd={addToCart} fmt={fmt} />
       )}
 
       {cartCount > 0 && tab === 'home' && (
