@@ -84,3 +84,19 @@ export function totalPrice(cart, products) {
     return s + (p ? p.price * i.qty : 0);
   }, 0);
 }
+
+// ── SEVIMLILAR ──
+export function getFavorites() {
+  try { return JSON.parse(localStorage.getItem('rc_favorites') || '[]'); } catch { return []; }
+}
+
+export function saveFavorites(favs) {
+  localStorage.setItem('rc_favorites', JSON.stringify(favs));
+}
+
+export function toggleFavorite(productId, favs) {
+  const exists = favs.includes(productId);
+  const newFavs = exists ? favs.filter(id => id !== productId) : [...favs, productId];
+  saveFavorites(newFavs);
+  return newFavs;
+}
