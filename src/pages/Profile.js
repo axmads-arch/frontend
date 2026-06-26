@@ -1,6 +1,8 @@
 import React from 'react';
 
-export default function Profile({ user, onLogin, onLogout, settings }) {
+const ICONS = { 'Cheesecake':'🍰','Medovik':'🍯','Tort':'🎂','Kofe':'☕','Choy':'🍵','Ichimlik':'🥤' };
+
+export default function Profile({ user, onLogin, onLogout, settings, favorites, products, onAdd, fmt }) {
   if (!user) {
     return (
       <div className="profile-page">
@@ -14,6 +16,25 @@ export default function Profile({ user, onLogin, onLogout, settings }) {
           <p>Buyurtma berish va tarixni ko'rish uchun telefon raqamingizni kiriting</p>
           <button className="login-btn" onClick={onLogin}>📱 Kirish</button>
         </div>
+
+        {favorites && favorites.length > 0 && products && (
+          <div className="profile-menu">
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>❤️ Sevimlilar</div>
+            {products.filter(p => favorites.includes(p.id)).map(p => (
+              <div key={p.id} className="profile-item">
+                <div className="profile-item-icon">{ICONS[p.category] || '🍰'}</div>
+                <div className="profile-item-text">
+                  <div className="profile-item-title">{p.name}</div>
+                  <div className="profile-item-sub">{fmt(p.price)}</div>
+                </div>
+                <button
+                  onClick={() => onAdd(p)}
+                  style={{background:'var(--teal)',color:'#fff',border:'none',borderRadius:8,padding:'6px 12px',fontSize:13,fontWeight:600,cursor:'pointer'}}
+                >+ Qo'shish</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -28,6 +49,26 @@ export default function Profile({ user, onLogin, onLogout, settings }) {
         <div className="profile-name">{user.name || 'Foydalanuvchi'}</div>
         <div className="profile-phone">{user.phone}</div>
       </div>
+
+      {/* SEVIMLILAR */}
+      {favorites && favorites.length > 0 && products && (
+        <div className="profile-menu" style={{ paddingBottom: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>❤️ Sevimlilar</div>
+          {products.filter(p => favorites.includes(p.id)).map(p => (
+            <div key={p.id} className="profile-item">
+              <div className="profile-item-icon">{ICONS[p.category] || '🍰'}</div>
+              <div className="profile-item-text">
+                <div className="profile-item-title">{p.name}</div>
+                <div className="profile-item-sub">{fmt(p.price)}</div>
+              </div>
+              <button
+                onClick={() => onAdd(p)}
+                style={{background:'var(--teal)',color:'#fff',border:'none',borderRadius:8,padding:'6px 12px',fontSize:13,fontWeight:600,cursor:'pointer'}}
+              >+ Qo'shish</button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* MENU */}
       <div className="profile-menu">
