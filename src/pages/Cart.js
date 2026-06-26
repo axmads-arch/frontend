@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createOrder } from '../data/api';
+import { createOrder, API_URL } from '../data/api';
 
 const CATS_ICONS = { 'Cheesecake': '🍰', 'Medovik': '🍯', 'Tort': '🎂', 'Kofe': '☕', 'Choy': '🍵', 'Ichimlik': '🥤' };
 
@@ -19,10 +19,47 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Promo
+  const [promoCode, setPromoCode] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(null); // { code, discount, type, value }
+  const [promoError, setPromoError] = useState('');
+
   const cartItems = cart.map(c => ({ ...c, product: products.find(p => p.id === c.id) })).filter(c => c.product);
   const subtotal = cartItems.reduce((s, i) => s + i.product.price * i.qty, 0);
   const deliveryPrice = deliveryType === 'delivery' ? (settings?.deliveryPrice || 10000) : 0;
-  const total = subtotal + deliveryPrice;
+  const discount = promoApplied ? promoApplied.discount : 0;
+  const total = Math.max(0, subtotal + deliveryPrice - discount);
+
+  const checkPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    setPromoApplied(null);
+    try {
+      const r = await fetch(`${API_URL}/promo/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode.trim().toUpperCase(), orderTotal: subtotal })
+      });
+      const d = await r.json();
+      if (d.valid) {
+        setPromoApplied({ code: promoCode.trim().toUpperCase(), discount: d.discount, ...d.promo });
+        showToast(`🎁 Chegirma: -${fmt(d.discount)}`);
+      } else {
+        setPromoError(d.error || 'Promo kod noto\'g\'ri');
+      }
+    } catch (e) {
+      setPromoError('Server bilan bog\'lanishda xatolik');
+    }
+    setPromoLoading(false);
+  };
+
+  const removePromo = () => {
+    setPromoApplied(null);
+    setPromoCode('');
+    setPromoError('');
+  };
 
   const placeOrder = async () => {
     if (!user) { onAuthRequired(); return; }
@@ -37,9 +74,20 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         paymentMethod: payment,
         address: deliveryType === 'delivery' ? address : '',
         comment,
+        totalPrice: total,
+        promoCode: promoApplied ? promoApplied.code : null,
+        discount: discount,
         items: cart.map(i => ({ productId: i.id, quantity: i.qty, price: products.find(p=>p.id===i.id)?.price || 0 })),
       });
       if (result.id) {
+        // Promo ishlatildi deb belgilaymiz
+        if (promoApplied) {
+          await fetch(`${API_URL}/promo/use`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: promoApplied.code })
+          });
+        }
         setSuccess(true);
       } else {
         showToast('Xatolik: ' + (result.error || 'Qayta urinib ko\'ring'));
@@ -160,6 +208,38 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           />
         </div>
 
+        {/* PROMO KOD */}
+        <div className="checkout-card">
+          <div className="checkout-title">🎁 Promo kod</div>
+          {promoApplied ? (
+            <div style={{ display:'flex', alignItems:'center', gap:10, background:'var(--teal-light)', borderRadius:10, padding:'12px 14px' }}>
+              <span style={{ fontSize:20 }}>🎉</span>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight:700, color:'var(--teal)', fontSize:14 }}>{promoApplied.code}</div>
+                <div style={{ fontSize:12, color:'var(--text2)' }}>Chegirma: -{fmt(promoApplied.discount)}</div>
+              </div>
+              <button onClick={removePromo} style={{ background:'none', border:'none', color:'var(--red)', fontSize:18, cursor:'pointer' }}>✕</button>
+            </div>
+          ) : (
+            <div style={{ display:'flex', gap:8 }}>
+              <input
+                className="field-input"
+                style={{ flex:1, textTransform:'uppercase' }}
+                placeholder="PROMO10"
+                value={promoCode}
+                onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                onKeyDown={e => e.key === 'Enter' && checkPromo()}
+              />
+              <button
+                onClick={checkPromo}
+                disabled={promoLoading || !promoCode.trim()}
+                style={{ background:'var(--teal)', color:'#fff', border:'none', borderRadius:10, padding:'0 16px', fontSize:13, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap', opacity: promoLoading ? 0.7 : 1 }}
+              >{promoLoading ? '...' : 'Tekshir'}</button>
+            </div>
+          )}
+          {promoError && <div style={{ color:'var(--red)', fontSize:12, marginTop:6, fontWeight:500 }}>⚠️ {promoError}</div>}
+        </div>
+
         {/* Payment */}
         <div className="checkout-card">
           <div className="checkout-title">To'lov usuli</div>
@@ -184,6 +264,12 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
             <div className="price-row">
               <span>Yetkazib berish</span>
               <span className="price-val">{fmt(deliveryPrice)}</span>
+            </div>
+          )}
+          {promoApplied && (
+            <div className="price-row">
+              <span>🎁 Chegirma ({promoApplied.code})</span>
+              <span style={{ color:'var(--red)', fontWeight:600 }}>-{fmt(discount)}</span>
             </div>
           )}
           <div className="price-row total">
