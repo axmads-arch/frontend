@@ -364,6 +364,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
 
   <div class="tab" id="tab-more">
     <div class="sec-head"><h2>Boshqaruv</h2></div>
+    <div class="chart-card">
+      <div class="chart-head">
+        <span class="chart-title">🎁 Promo kodlar</span>
+        <button class="icon-btn" onclick="loadPromos()">🔄</button>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label>Kod</label><input type="text" id="promoCode" placeholder="YANGI10" style="text-transform:uppercase"></div>
+        <div class="fg"><label>Turi</label><select id="promoType"><option value="percent">% Foiz</option><option value="fixed">So'm</option></select></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label>Qiymat</label><input type="number" id="promoValue" placeholder="10"></div>
+        <div class="fg"><label>Min. buyurtma</label><input type="number" id="promoMin" placeholder="0"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label>Limit (ixtiyoriy)</label><input type="number" id="promoMax" placeholder="Cheksiz"></div>
+        <div class="fg"><label>Tugash sanasi</label><input type="date" id="promoExpires"></div>
+      </div>
+      <button class="btn-p" onclick="addPromo()" style="margin-bottom:14px">➕ Promo yaratish</button>
+      <div id="promosList"><div class="empty"><div class="empty-text">Yuklanmoqda...</div></div></div>
+    </div>
     <div class="chart-card" id="custSection">
       <div class="chart-head">
         <span class="chart-title">👥 Mijozlar</span>
@@ -399,13 +419,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
       <div class="fg-row">
         <div class="fg"><label>Narxi (so'm)</label><input type="number" id="s-del"></div>
         <div class="fg"><label>Minimal buyurtma</label><input type="number" id="s-min"></div>
-      </div>
-    </div>
-    <div class="set-section">
-      <h3>🕐 Ish vaqti</h3>
-      <div class="fg-row">
-        <div class="fg"><label>Boshlanish</label><input type="time" id="s-wstart"></div>
-        <div class="fg"><label>Tugash</label><input type="time" id="s-wend"></div>
       </div>
     </div>
     <div class="set-section">
@@ -502,7 +515,7 @@ function switchTab(name, btn) {
   document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (name === 'more') { loadCustomers(); loadBanners(); }
+  if (name === 'more') { loadCustomers(); loadBanners(); loadPromos(); }
   if (name === 'dashboard') loadDashboard();
 }
 
@@ -934,6 +947,72 @@ function renderCustomers(list) {
     </div>`).join('');
 }
 
+// ── PROMO ──
+async function loadPromos() {
+  try {
+    const r = await fetch(`${API}/promo`);
+    const list = await r.json();
+    renderPromos(list);
+  } catch(e) { document.getElementById('promosList').innerHTML='<div class="empty"><div class="empty-text">Xatolik</div></div>'; }
+}
+
+function renderPromos(list) {
+  if (!list.length) { document.getElementById('promosList').innerHTML='<div class="empty"><div class="empty-text">Promo kodlar yo\'q</div></div>'; return; }
+  document.getElementById('promosList').innerHTML = list.map(p => {
+    const valTxt = p.type === 'percent' ? `${p.value}%` : `${p.value.toLocaleString()} so'm`;
+    const expTxt = p.expiresAt ? new Date(p.expiresAt).toLocaleDateString('uz-UZ') : 'Cheksiz';
+    const usesTxt = p.maxUses ? `${p.usedCount}/${p.maxUses}` : `${p.usedCount}/∞`;
+    return `
+    <div class="cust-card">
+      <div class="cust-avatar" style="background:${p.active?'var(--p-light)':'#fee2e2'};color:${p.active?'var(--p)':'var(--red)'}">🎁</div>
+      <div class="cust-info">
+        <div class="cust-name">${p.code} <span style="color:var(--p);font-weight:800">${valTxt}</span></div>
+        <div class="cust-phone" style="color:var(--text2)">Min: ${p.minOrder.toLocaleString()} so'm · ${usesTxt} ishlatilgan</div>
+        <div class="cust-addr">⏰ ${expTxt}</div>
+      </div>
+      <div class="cust-stat">
+        <label class="toggle"><input type="checkbox" ${p.active?'checked':''} onchange="togglePromo(${p.id},this.checked)"><span class="tog-sl"></span></label>
+        <button class="prod-del" style="margin-top:6px" onclick="deletePromo(${p.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addPromo() {
+  const code = document.getElementById('promoCode').value.trim().toUpperCase();
+  const type = document.getElementById('promoType').value;
+  const value = Number(document.getElementById('promoValue').value);
+  const minOrder = Number(document.getElementById('promoMin').value) || 0;
+  const maxUses = document.getElementById('promoMax').value || null;
+  const expiresAt = document.getElementById('promoExpires').value || null;
+  if (!code || !value) { toast('Kod va qiymat kerak!','#e53935'); return; }
+  try {
+    const r = await fetch(`${API}/promo`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,type,value,minOrder,maxUses,expiresAt})});
+    const d = await r.json();
+    if (d.error) { toast(d.error,'#e53935'); return; }
+    toast('✅ Promo yaratildi!','#2f9e44');
+    document.getElementById('promoCode').value='';
+    document.getElementById('promoValue').value='';
+    document.getElementById('promoMin').value='';
+    document.getElementById('promoMax').value='';
+    document.getElementById('promoExpires').value='';
+    loadPromos();
+  } catch(e) { toast('Xatolik!','#e53935'); }
+}
+
+async function togglePromo(id, val) {
+  try {
+    await fetch(`${API}/promo/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:val})});
+    toast(val?'✅ Faollashtirildi':'🔕 O\'chirildi');
+    loadPromos();
+  } catch(e) { toast('Xatolik!','#e53935'); }
+}
+
+async function deletePromo(id) {
+  if (!confirm('O\'chirasizmi?')) return;
+  try { await fetch(`${API}/promo/${id}`,{method:'DELETE'}); toast('O\'chirildi','#e53935'); loadPromos(); } catch(e) {}
+}
+
 async function loadBanners() {
   try {
     const r = await fetch(`${API}/banner`);
@@ -980,8 +1059,6 @@ async function loadSettings() {
     document.getElementById('s-ig').value = settings.instagram||'';
     document.getElementById('s-del').value = settings.deliveryPrice||0;
     document.getElementById('s-min').value = settings.minOrderPrice||0;
-    document.getElementById('s-wstart').value = settings.workStart||'09:00';
-    document.getElementById('s-wend').value = settings.workEnd||'22:00';
     document.getElementById('s-btxt').value = settings.bannerText||'';
     updateShopBadge(settings.isOpen);
   } catch(e) {}
@@ -996,8 +1073,6 @@ async function saveSettings() {
     instagram:document.getElementById('s-ig').value,
     deliveryPrice:Number(document.getElementById('s-del').value),
     minOrderPrice:Number(document.getElementById('s-min').value),
-    workStart:document.getElementById('s-wstart').value,
-    workEnd:document.getElementById('s-wend').value,
     bannerText:document.getElementById('s-btxt').value,
     isOpen:settings.isOpen,
   };
