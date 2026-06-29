@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const CATS_ICONS = { 'Cheesecake': '🍰', 'Medovik': '🍯', 'Tort': '🎂', 'Kofe': '☕', 'Choy': '🍵', 'Ichimlik': '🥤' };
 
-export default function SearchPage({ products, cart, onAdd, onRemove, onClose, fmt }) {
+export default function SearchPage({ products, cart, onAdd, onRemove, onClose, fmt, onProductClick }) {
   const [query, setQuery] = useState('');
 
   const results = query.trim()
@@ -27,7 +27,7 @@ export default function SearchPage({ products, cart, onAdd, onRemove, onClose, f
             autoFocus
           />
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--teal)', fontSize: 15, fontWeight: 600, cursor: 'pointer', white_space: 'nowrap' }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--teal)', fontSize: 15, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
           Bekor
         </button>
       </div>
@@ -43,7 +43,7 @@ export default function SearchPage({ products, cart, onAdd, onRemove, onClose, f
           {results.map(p => {
             const qty = getQty(p.id);
             return (
-              <div key={p.id} className="product-card">
+              <div key={p.id} className="product-card" onClick={() => onProductClick && onProductClick(p)}>
                 <div className="product-img-wrap">
                   {p.image ? (
                     <img className="product-img" src={p.image} alt={p.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
@@ -58,12 +58,12 @@ export default function SearchPage({ products, cart, onAdd, onRemove, onClose, f
                   <div className="product-footer">
                     <div className="product-price">{fmt(p.price)}</div>
                     {qty === 0 ? (
-                      <button className="add-btn" onClick={() => onAdd(p)}>+</button>
+                      <button className="add-btn" onClick={e=>{e.stopPropagation();onAdd(p);}}>+</button>
                     ) : (
                       <div className="qty-control">
-                        <button className="qty-btn" onClick={() => onRemove(p.id)}>−</button>
+                        <button className="qty-btn" onClick={e=>{e.stopPropagation();onRemove(p.id);}}>−</button>
                         <span className="qty-num">{qty}</span>
-                        <button className="qty-btn" onClick={() => onAdd(p)}>+</button>
+                        <button className="qty-btn" onClick={e=>{e.stopPropagation();onAdd(p);}}>+</button>
                       </div>
                     )}
                   </div>
