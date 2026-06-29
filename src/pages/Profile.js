@@ -2,7 +2,7 @@ import React from 'react';
 
 const ICONS = { 'Cheesecake':'🍰','Medovik':'🍯','Tort':'🎂','Kofe':'☕','Choy':'🍵','Ichimlik':'🥤' };
 
-export default function Profile({ user, onLogin, onLogout, settings, favorites, products, onAdd, fmt }) {
+export default function Profile({ user, onLogin, onLogout, settings, favorites, products, onAdd, fmt, darkMode, onToggleDark }) {
   if (!user) {
     return (
       <div className="profile-page">
@@ -19,7 +19,7 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
 
         {favorites && favorites.length > 0 && products && (
           <div className="profile-menu">
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>❤️ Sevimlilar</div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: 'var(--text)' }}>❤️ Sevimlilar</div>
             {products.filter(p => favorites.includes(p.id)).map(p => (
               <div key={p.id} className="profile-item">
                 <div className="profile-item-icon">{ICONS[p.category] || '🍰'}</div>
@@ -27,10 +27,9 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
                   <div className="profile-item-title">{p.name}</div>
                   <div className="profile-item-sub">{fmt(p.price)}</div>
                 </div>
-                <button
-                  onClick={() => onAdd(p)}
-                  style={{background:'var(--teal)',color:'#fff',border:'none',borderRadius:8,padding:'6px 12px',fontSize:13,fontWeight:600,cursor:'pointer'}}
-                >+ Qo'shish</button>
+                <button onClick={() => onAdd(p)} style={{background:'var(--teal)',color:'#fff',border:'none',borderRadius:8,padding:'6px 12px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                  + Qo'shish
+                </button>
               </div>
             ))}
           </div>
@@ -43,17 +42,15 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
 
   return (
     <div className="profile-page">
-      {/* HEADER */}
       <div className="profile-header">
         <div className="profile-avatar">{initials}</div>
         <div className="profile-name">{user.name || 'Foydalanuvchi'}</div>
         <div className="profile-phone">{user.phone}</div>
       </div>
 
-      {/* SEVIMLILAR */}
       {favorites && favorites.length > 0 && products && (
         <div className="profile-menu" style={{ paddingBottom: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>❤️ Sevimlilar</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: 'var(--text)' }}>❤️ Sevimlilar</div>
           {products.filter(p => favorites.includes(p.id)).map(p => (
             <div key={p.id} className="profile-item">
               <div className="profile-item-icon">{ICONS[p.category] || '🍰'}</div>
@@ -61,17 +58,24 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
                 <div className="profile-item-title">{p.name}</div>
                 <div className="profile-item-sub">{fmt(p.price)}</div>
               </div>
-              <button
-                onClick={() => onAdd(p)}
-                style={{background:'var(--teal)',color:'#fff',border:'none',borderRadius:8,padding:'6px 12px',fontSize:13,fontWeight:600,cursor:'pointer'}}
-              >+ Qo'shish</button>
+              <button onClick={() => onAdd(p)} style={{background:'var(--teal)',color:'#fff',border:'none',borderRadius:8,padding:'6px 12px',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                + Qo'shish
+              </button>
             </div>
           ))}
         </div>
       )}
 
-      {/* MENU */}
       <div className="profile-menu">
+        {/* Dark mode toggle */}
+        <div className="profile-item" onClick={onToggleDark}>
+          <div className="profile-item-icon">{darkMode ? '☀️' : '🌙'}</div>
+          <div className="profile-item-text">
+            <div className="profile-item-title">{darkMode ? 'Kunduzgi rejim' : 'Tungi rejim'}</div>
+            <div className="profile-item-sub">{darkMode ? 'Hozir: Dark mode' : 'Hozir: Light mode'}</div>
+          </div>
+          <span className="profile-item-arrow">›</span>
+        </div>
 
         <div className="profile-item">
           <div className="profile-item-icon">📞</div>
@@ -123,7 +127,6 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
         </div>
       </div>
 
-      {/* FOOTER */}
       <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text3)', fontSize: 12 }}>
         © 2026 Rahmat Chef. Barcha huquqlar himoyalangan.
       </div>
