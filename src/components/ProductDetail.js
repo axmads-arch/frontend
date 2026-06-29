@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+
 const ICONS = { 'Cheesecake':'🍰','Medovik':'🍯','Tort':'🎂','Kofe':'☕','Choy':'🍵','Ichimlik':'🥤' };
 
 export default function ProductDetail({ product, cart, onAdd, onRemove, onClose, isFav, onToggleFav, fmt }) {
