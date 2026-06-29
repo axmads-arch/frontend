@@ -7,6 +7,7 @@ import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import AuthSheet from './components/AuthSheet';
 import SearchPage from './components/SearchPage';
+import ProductDetail from './components/ProductDetail';
 
 export default function App() {
   const [tab, setTab] = useState('home');
@@ -20,7 +21,22 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [authOpen, setAuthOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [toast, setToast] = useState('');
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('rc_dark') === 'true');
+
+  // Dark mode
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('rc_dark', darkMode);
+  }, [darkMode]);
+
+  // Push notification
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      setTimeout(() => Notification.requestPermission(), 3000);
+    }
+  }, []);
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -65,7 +81,7 @@ export default function App() {
   const handleToggleFavorite = (productId) => {
     const newFavs = toggleFavorite(productId, favorites);
     setFavorites(newFavs);
-    showToast(newFavs.includes(productId) ? '❤️ Sevimlilarga qo\'shildi' : '🤍 Sevimlilardan olib tashlandi');
+    showToast(newFavs.includes(productId) ? '❤️ Sevimlilarga qo\'shildi' : '🤍 Olib tashlandi');
   };
 
   const clearCart = () => updateCart([]);
@@ -75,16 +91,33 @@ export default function App() {
   return (
     <div className="app">
       {tab === 'home' && (
-        <Home products={products} categories={categories} banners={banners} settings={settings} loading={loading} cart={cart} onAdd={addToCart} onRemove={removeFromCart} onSearchOpen={() => setSearchOpen(true)} cartCount={cartCount} cartTotal={cartTotal} fmt={fmt} favorites={favorites} onToggleFavorite={handleToggleFavorite} />
+        <Home
+          products={products} categories={categories} banners={banners}
+          settings={settings} loading={loading} cart={cart}
+          onAdd={addToCart} onRemove={removeFromCart}
+          onSearchOpen={() => setSearchOpen(true)}
+          onProductClick={(p) => setSelectedProduct(p)}
+          cartCount={cartCount} cartTotal={cartTotal} fmt={fmt}
+          favorites={favorites} onToggleFavorite={handleToggleFavorite}
+          darkMode={darkMode} onToggleDark={() => setDarkMode(d => !d)}
+        />
       )}
       {tab === 'cart' && (
-        <Cart products={products} cart={cart} settings={settings} user={user} onAdd={addToCart} onRemove={removeFromCart} onClearCart={clearCart} onBack={() => setTab('home')} onOrderSuccess={() => { clearCart(); setTab('orders'); }} onAuthRequired={() => setAuthOpen(true)} showToast={showToast} fmt={fmt} />
+        <Cart products={products} cart={cart} settings={settings} user={user}
+          onAdd={addToCart} onRemove={removeFromCart} onClearCart={clearCart}
+          onBack={() => setTab('home')}
+          onOrderSuccess={() => { clearCart(); setTab('orders'); }}
+          onAuthRequired={() => setAuthOpen(true)} showToast={showToast} fmt={fmt} />
       )}
       {tab === 'orders' && (
         <Orders user={user} onAuthRequired={() => setAuthOpen(true)} fmt={fmt} />
       )}
       {tab === 'profile' && (
-        <Profile user={user} onLogin={() => setAuthOpen(true)} onLogout={() => { setUser(null); localStorage.removeItem('rc_user'); localStorage.removeItem('rc_token'); }} settings={settings} favorites={favorites} products={products} onAdd={addToCart} fmt={fmt} />
+        <Profile user={user} onLogin={() => setAuthOpen(true)}
+          onLogout={() => { setUser(null); localStorage.removeItem('rc_user'); localStorage.removeItem('rc_token'); }}
+          settings={settings} favorites={favorites} products={products}
+          onAdd={addToCart} fmt={fmt}
+          darkMode={darkMode} onToggleDark={() => setDarkMode(d => !d)} />
       )}
 
       {cartCount > 0 && tab === 'home' && (
@@ -118,7 +151,19 @@ export default function App() {
       </nav>
 
       {authOpen && <AuthSheet onClose={() => setAuthOpen(false)} onSuccess={(u) => { setUser(u); setAuthOpen(false); showToast('Xush kelibsiz! 👋'); }} />}
-      {searchOpen && <SearchPage products={products} cart={cart} onAdd={addToCart} onRemove={removeFromCart} onClose={() => setSearchOpen(false)} fmt={fmt} />}
+      {searchOpen && <SearchPage products={products} cart={cart} onAdd={addToCart} onRemove={removeFromCart} onClose={() => setSearchOpen(false)} fmt={fmt} onProductClick={(p) => { setSearchOpen(false); setSelectedProduct(p); }} />}
+      {selectedProduct && (
+        <ProductDetail
+          product={selectedProduct}
+          cart={cart}
+          onAdd={addToCart}
+          onRemove={removeFromCart}
+          onClose={() => setSelectedProduct(null)}
+          isFav={favorites.includes(selectedProduct.id)}
+          onToggleFav={() => handleToggleFavorite(selectedProduct.id)}
+          fmt={fmt}
+        />
+      )}
       {toast && <div className="toast">{toast}</div>}
     </div>
   );
