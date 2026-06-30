@@ -11,6 +11,29 @@ const PAYMENTS = [
   { id: 'card', icon: '🏦', label: 'Karta' },
 ];
 
+function getTimeSlots() {
+  const slots = [];
+  const now = new Date();
+  // Bugun — keyingi 2 soatdan boshlab, har yarim soatda, 22:00 gacha
+  for (let h = now.getHours() + 2; h <= 22; h++) {
+    for (let m of [0, 30]) {
+      const slot = new Date(now);
+      slot.setHours(h, m, 0, 0);
+      if (slot > now) slots.push({ date: slot, label: `Bugun, ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}` });
+    }
+  }
+  // Ertaga — 09:00 dan 22:00 gacha
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
+  for (let h = 9; h <= 22; h++) {
+    for (let m of [0, 30]) {
+      const slot = new Date(tomorrow);
+      slot.setHours(h, m, 0, 0);
+      slots.push({ date: slot, label: `Ertaga, ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}` });
+    }
+  }
+  return slots;
+}
+
 export default function Cart({ products, cart, settings, user, onAdd, onRemove, onClearCart, onBack, onOrderSuccess, onAuthRequired, showToast, fmt }) {
   const [deliveryType, setDeliveryType] = useState('delivery');
   const [address, setAddress] = useState('');
@@ -19,10 +42,15 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Vaqt belgilash
+  const [scheduleType, setScheduleType] = useState('now'); // now | scheduled
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const timeSlots = getTimeSlots();
+
   // Promo
   const [promoCode, setPromoCode] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
-  const [promoApplied, setPromoApplied] = useState(null); // { code, discount, type, value }
+  const [promoApplied, setPromoApplied] = useState(null);
   const [promoError, setPromoError] = useState('');
 
   const cartItems = cart.map(c => ({ ...c, product: products.find(p => p.id === c.id) })).filter(c => c.product);
@@ -64,6 +92,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
   const placeOrder = async () => {
     if (!user) { onAuthRequired(); return; }
     if (deliveryType === 'delivery' && !address.trim()) { showToast('Manzilni kiriting!'); return; }
+    if (scheduleType === 'scheduled' && !selectedSlot) { showToast('Vaqtni tanlang!'); return; }
 
     setLoading(true);
     try {
@@ -77,10 +106,10 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         totalPrice: total,
         promoCode: promoApplied ? promoApplied.code : null,
         discount: discount,
+        scheduledTime: scheduleType === 'scheduled' ? selectedSlot.date.toISOString() : null,
         items: cart.map(i => ({ productId: i.id, quantity: i.qty, price: products.find(p=>p.id===i.id)?.price || 0 })),
       });
       if (result.id) {
-        // Promo ishlatildi deb belgilaymiz
         if (promoApplied) {
           await fetch(`${API_URL}/promo/use`, {
             method: 'POST',
@@ -104,7 +133,9 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
           <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Buyurtma qabul qilindi!</h2>
-          <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 8 }}>Tez orada operator siz bilan bog'lanadi</p>
+          <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 8 }}>
+            {scheduleType === 'scheduled' && selectedSlot ? `Yetkazish vaqti: ${selectedSlot.label}` : 'Tez orada operator siz bilan bog\'lanadi'}
+          </p>
           <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 28 }}>📞 {settings?.phone || '+998 93 272 2222'}</p>
           <button className="order-btn" style={{ maxWidth: 280, margin: '0 auto' }} onClick={onOrderSuccess}>
             Buyurtmalarni ko'rish
@@ -140,7 +171,6 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         </button>
       </div>
 
-      {/* CART ITEMS */}
       <div className="cart-items">
         {cartItems.map(item => (
           <div key={item.id} className="cart-item">
@@ -163,10 +193,8 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         ))}
       </div>
 
-      {/* CHECKOUT */}
       <div className="checkout-section">
 
-        {/* Delivery type */}
         <div className="checkout-card">
           <div className="checkout-title">Yetkazish turi</div>
           <div className="delivery-toggle">
@@ -183,7 +211,6 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           </div>
         </div>
 
-        {/* Address */}
         {deliveryType === 'delivery' && (
           <div className="checkout-card">
             <label className="field-label">📍 Yetkazib berish manzili</label>
@@ -196,7 +223,41 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           </div>
         )}
 
-        {/* Comment */}
+        {/* VAQT BELGILASH */}
+        <div className="checkout-card">
+          <div className="checkout-title">📅 Yetkazish vaqti</div>
+          <div className="delivery-toggle" style={{ marginBottom: scheduleType === 'scheduled' ? 12 : 0 }}>
+            <div className={`delivery-opt ${scheduleType === 'now' ? 'active' : ''}`} onClick={() => { setScheduleType('now'); setSelectedSlot(null); }}>
+              <div className="delivery-opt-icon">⚡</div>
+              <div className="delivery-opt-label">Tezroq</div>
+              <div className="delivery-opt-sub">Hozir buyurtma</div>
+            </div>
+            <div className={`delivery-opt ${scheduleType === 'scheduled' ? 'active' : ''}`} onClick={() => setScheduleType('scheduled')}>
+              <div className="delivery-opt-icon">🕐</div>
+              <div className="delivery-opt-label">Vaqt belgilash</div>
+              <div className="delivery-opt-sub">Ma'lum vaqtga</div>
+            </div>
+          </div>
+
+          {scheduleType === 'scheduled' && (
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+              {timeSlots.slice(0, 20).map((slot, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedSlot(slot)}
+                  style={{
+                    flexShrink: 0, padding: '10px 14px', borderRadius: 10,
+                    border: selectedSlot === slot ? '2px solid var(--teal)' : '1.5px solid var(--border)',
+                    background: selectedSlot === slot ? 'var(--teal-light)' : 'var(--white)',
+                    color: selectedSlot === slot ? 'var(--teal)' : 'var(--text)',
+                    fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
+                  }}
+                >{slot.label}</button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="checkout-card">
           <label className="field-label">💬 Izoh (ixtiyoriy)</label>
           <textarea
@@ -208,7 +269,6 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           />
         </div>
 
-        {/* PROMO KOD */}
         <div className="checkout-card">
           <div className="checkout-title">🎁 Promo kod</div>
           {promoApplied ? (
@@ -240,7 +300,6 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           {promoError && <div style={{ color:'var(--red)', fontSize:12, marginTop:6, fontWeight:500 }}>⚠️ {promoError}</div>}
         </div>
 
-        {/* Payment */}
         <div className="checkout-card">
           <div className="checkout-title">To'lov usuli</div>
           <div className="payment-grid">
@@ -253,7 +312,6 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           </div>
         </div>
 
-        {/* Price summary */}
         <div className="checkout-card">
           <div className="checkout-title">Hisob</div>
           <div className="price-row">
