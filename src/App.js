@@ -162,6 +162,7 @@ export default function App() {
           isFav={favorites.includes(selectedProduct.id)}
           onToggleFav={() => handleToggleFavorite(selectedProduct.id)}
           fmt={fmt}
+          user={user}
         />
       )}
       {toast && <div className="toast">{toast}</div>}
