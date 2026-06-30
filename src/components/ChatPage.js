@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { API_URL } from '../data/api';
 
 export default function ChatPage({ user, onClose, onAuthRequired }) {
@@ -8,25 +8,25 @@ export default function ChatPage({ user, onClose, onAuthRequired }) {
   const [sending, setSending] = useState(false);
   const endRef = useRef(null);
 
-  useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    loadMessages();
-    const interval = setInterval(loadMessages, 5000);
-    return () => clearInterval(interval);
-  }, [user]);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     try {
       const r = await fetch(`${API_URL}/chat/${user.phone}`);
       const d = await r.json();
       setMessages(Array.isArray(d) ? d : []);
     } catch (e) {}
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    loadMessages();
+    const interval = setInterval(loadMessages, 5000);
+    return () => clearInterval(interval);
+  }, [user, loadMessages]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
