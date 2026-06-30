@@ -8,6 +8,7 @@ import Profile from './pages/Profile';
 import AuthSheet from './components/AuthSheet';
 import SearchPage from './components/SearchPage';
 import ProductDetail from './components/ProductDetail';
+import ChatPage from './components/ChatPage';
 
 export default function App() {
   const [tab, setTab] = useState('home');
@@ -22,6 +23,7 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const [toast, setToast] = useState('');
   const [darkMode, setDarkMode] = useState(localStorage.getItem('rc_dark') === 'true');
 
@@ -97,6 +99,7 @@ export default function App() {
           onAdd={addToCart} onRemove={removeFromCart}
           onSearchOpen={() => setSearchOpen(true)}
           onProductClick={(p) => setSelectedProduct(p)}
+          onChatOpen={() => setChatOpen(true)}
           cartCount={cartCount} cartTotal={cartTotal} fmt={fmt}
           favorites={favorites} onToggleFavorite={handleToggleFavorite}
           darkMode={darkMode} onToggleDark={() => setDarkMode(d => !d)}
@@ -165,6 +168,7 @@ export default function App() {
           user={user}
         />
       )}
+      {chatOpen && <ChatPage user={user} onClose={() => setChatOpen(false)} onAuthRequired={() => { setChatOpen(false); setAuthOpen(true); }} />}
       {toast && <div className="toast">{toast}</div>}
     </div>
   );
