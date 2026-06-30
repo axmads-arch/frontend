@@ -276,6 +276,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sa
       <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val" id="d-customers">—</div><div class="stat-lbl">Mijozlar</div></div>
     </div>
     <div class="chart-card">
+      <div class="chart-head"><span class="chart-title">📥 Export</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="fg-row">
+          <div class="fg"><label>Dan</label><input type="date" id="exportFrom"></div>
+          <div class="fg"><label>Gacha</label><input type="date" id="exportTo"></div>
+        </div>
+        <button class="btn-p" onclick="exportData('orders')" style="background:var(--p)">📦 Buyurtmalar CSV</button>
+        <button class="btn-p" onclick="exportData('customers')" style="background:#1c7ed6">👥 Mijozlar CSV</button>
+        <button class="btn-p" onclick="exportData('products')" style="background:#2f9e44">🍰 Mahsulotlar CSV</button>
+      </div>
+    </div>
+    <div class="chart-card">
       <div class="chart-head"><span class="chart-title">📈 30 kunlik buyurtmalar</span></div>
       <div class="chart-bar-wrap" id="dailyChart"></div>
     </div>
@@ -708,6 +720,18 @@ async function handleBanner(input) {
   const url = await uploadToImgBB(file);
   if (url) { bannerB64 = url; document.getElementById('bannerPreview').src = url; toast('✅ Banner yuklandi!', '#2f9e44'); }
   else toast('Banner yuklashda xatolik', '#e53935');
+}
+
+function exportData(type) {
+  const from = document.getElementById('exportFrom').value;
+  const to = document.getElementById('exportTo').value;
+  let url = `${API}/reports/export/${type}`;
+  const params = [];
+  if (from) params.push(`from=${from}`);
+  if (to) params.push(`to=${to}`);
+  if (params.length) url += '?' + params.join('&');
+  window.open(url, '_blank');
+  toast(`📥 ${type === 'orders' ? 'Buyurtmalar' : type === 'customers' ? 'Mijozlar' : 'Mahsulotlar'} yuklanmoqda...`);
 }
 
 async function loadDashboard() {
