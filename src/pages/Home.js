@@ -3,7 +3,7 @@ import { LOGO_URL } from '../data/api';
 
 const ICONS = { 'Cheesecake':'🍰','Medovik':'🍯','Tort':'🎂','Kofe':'☕','Choy':'🍵','Ichimlik':'🥤','Barchasi':'🍽️' };
 
-export default function Home({ products, categories, banners, settings, loading, cart, onAdd, onRemove, onSearchOpen, onProductClick, cartCount, cartTotal, fmt, favorites, onToggleFavorite, darkMode, onToggleDark }) {
+export default function Home({ products, categories, banners, settings, loading, cart, onAdd, onRemove, onSearchOpen, onProductClick, onChatOpen, cartCount, cartTotal, fmt, favorites, onToggleFavorite, darkMode, onToggleDark }) {
   const [activeCat, setActiveCat] = useState('Barchasi');
   const [bannerIdx, setBannerIdx] = useState(0);
   const bannerTimer = useRef(null);
@@ -32,6 +32,7 @@ export default function Home({ products, categories, banners, settings, loading,
           <div className="header-sub">Sweet Pastry</div>
         </div>
         <div className="header-actions">
+          <button className="icon-btn" onClick={onChatOpen} title="Chat">💬</button>
           <button className="icon-btn" onClick={onToggleDark} title="Dark mode">
             {darkMode ? '☀️' : '🌙'}
           </button>
