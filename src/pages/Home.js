@@ -1,7 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LOGO_URL } from '../data/api';
 
-const ICONS = { 'Cheesecake':'🍰','Medovik':'🍯','Tort':'🎂','Kofe':'☕','Choy':'🍵','Ichimlik':'🥤','Barchasi':'🍽' };
+// SVG ICONS
+const Icons = {
+  search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  moon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
+  sun: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>,
+  chat: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+  mapPin: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  truck: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  chevronDown: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  plus: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  minus: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  heart: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
+  heartFill: <svg viewBox="0 0 24 24" fill="#d93025" stroke="#d93025" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
+};
 
 export default function Home({ products, categories, banners, settings, loading, cart, onAdd, onRemove, onSearchOpen, onProductClick, onChatOpen, cartCount, cartTotal, fmt, favorites, onToggleFavorite, darkMode, onToggleDark }) {
   const [activeCat, setActiveCat] = useState('Barchasi');
@@ -25,33 +38,30 @@ export default function Home({ products, categories, banners, settings, loading,
       <div className="product-card" onClick={() => onProductClick(p)}>
         <div className="product-img-wrap">
           {p.image
-            ? <img className="product-img" src={p.image} alt={p.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+            ? <img className="product-img" src={p.image} alt={p.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
             : null}
-          <div className="product-img-placeholder" style={{ display: p.image ? 'none' : 'flex' }}>
-            {ICONS[p.category] || '🍰'}
-          </div>
-          <button
-            onClick={e => { e.stopPropagation(); onToggleFavorite(p.id); }}
-            style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.88)', border:'none', borderRadius:'50%', width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:14, backdropFilter:'blur(4px)' }}
-          >{isFav(p.id) ? '❤️' : '🤍'}</button>
+          <div className="product-img-placeholder" style={{ display: p.image ? 'none' : 'flex' }}>🍰</div>
+          <button className="fav-btn" onClick={e => { e.stopPropagation(); onToggleFavorite(p.id); }}>
+            {isFav(p.id) ? Icons.heartFill : Icons.heart}
+          </button>
           {p.stock !== null && p.stock !== undefined && p.stock <= 5 && p.stock > 0 && (
-            <div style={{ position:'absolute', bottom:8, left:8, background:'rgba(0,0,0,0.7)', color:'white', fontSize:10, fontWeight:700, padding:'3px 8px', borderRadius:6 }}>
-              {p.stock} ta qoldi
-            </div>
+            <div className="stock-badge">{p.stock} ta qoldi</div>
           )}
         </div>
         <div className="product-body">
-          <div className="product-name">{p.name}</div>
           <div className="product-cat">{p.category}</div>
+          <div className="product-name">{p.name}</div>
           <div className="product-footer">
             <div className="product-price">{fmt(p.price)}</div>
             {qty === 0 ? (
-              <button className="add-btn" onClick={e => { e.stopPropagation(); onAdd(p); }}>+</button>
+              <button className="add-btn" onClick={e => { e.stopPropagation(); onAdd(p); }}>
+                {Icons.plus}
+              </button>
             ) : (
               <div className="qty-control" onClick={e => e.stopPropagation()}>
-                <button className="qty-btn" onClick={() => onRemove(p.id)}>−</button>
+                <button className="qty-btn" onClick={() => onRemove(p.id)}>{Icons.minus}</button>
                 <span className="qty-num">{qty}</span>
-                <button className="qty-btn" onClick={() => onAdd(p)}>+</button>
+                <button className="qty-btn" onClick={() => onAdd(p)}>{Icons.plus}</button>
               </div>
             )}
           </div>
@@ -64,18 +74,16 @@ export default function Home({ products, categories, banners, settings, loading,
     <div className="page">
       {/* HEADER */}
       <header className="header">
-        <img className="header-logo" src={LOGO_URL} alt="Logo" onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
-        <div className="header-logo-placeholder" style={{ display:'none' }}>R</div>
+        <img className="header-logo" src={LOGO_URL} alt="Logo" onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+        <div className="header-logo-placeholder" style={{ display: 'none' }}>R</div>
         <div className="header-info">
           <div className="header-name">Rahmat Chef</div>
           <div className="header-sub">Sweet Pastry</div>
         </div>
         <div className="header-actions">
-          <button className="icon-btn" onClick={onChatOpen}>💬</button>
-          <button className="icon-btn" onClick={onToggleDark}>{darkMode ? '☀️' : '🌙'}</button>
-          <button className="icon-btn" onClick={onSearchOpen}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </button>
+          <button className="icon-btn" onClick={onChatOpen}>{Icons.chat}</button>
+          <button className="icon-btn" onClick={onToggleDark}>{darkMode ? Icons.sun : Icons.moon}</button>
+          <button className="icon-btn" onClick={onSearchOpen}>{Icons.search}</button>
         </div>
       </header>
 
@@ -83,9 +91,16 @@ export default function Home({ products, categories, banners, settings, loading,
       <div className="delivery-bar">
         <div className="delivery-bar-left">
           <div className="delivery-label">Yetkazib berish</div>
-          <div className="delivery-addr">📍 Toshkent shahri</div>
+          <div className="delivery-addr">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Toshkent shahri
+          </div>
         </div>
-        <button className="delivery-type-btn">🚗 Yetkazib berish ▾</button>
+        <button className="delivery-type-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          Yetkazib berish
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
       </div>
 
       {/* BANNER */}
@@ -118,7 +133,7 @@ export default function Home({ products, categories, banners, settings, loading,
       {/* SEVIMLILAR */}
       {favorites && favorites.length > 0 && (
         <div className="section">
-          <div className="section-title">❤️ Sevimlilar</div>
+          <div className="section-title">Sevimlilar</div>
           <div className="product-grid">
             {products.filter(p => favorites.includes(p.id)).map(p => <ProductCard key={p.id} p={p} />)}
           </div>
@@ -138,13 +153,16 @@ export default function Home({ products, categories, banners, settings, loading,
 
       {/* MAHSULOTLAR */}
       <div className="section">
-        <div className="section-title">{activeCat === 'Barchasi' ? 'Barcha mahsulotlar' : activeCat}</div>
+        <div className="section-title">
+          {activeCat === 'Barchasi' ? 'Barcha mahsulotlar' : activeCat}
+        </div>
         {loading ? (
           <div className="product-grid">
             {[1,2,3,4,5,6].map(i => (
               <div key={i} className="skel-card">
                 <div className="skeleton skel-img" />
                 <div className="skel-body">
+                  <div className="skeleton skel-line" style={{ width: '40%', height: 9, marginBottom: 5 }} />
                   <div className="skeleton skel-line" />
                   <div className="skeleton skel-line short" />
                 </div>
@@ -153,8 +171,11 @@ export default function Home({ products, categories, banners, settings, loading,
           </div>
         ) : filtered.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">😕</div>
+            <div className="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
             <h3>Mahsulotlar yo'q</h3>
+            <p>Bu kategoriyada hozircha mahsulot mavjud emas</p>
           </div>
         ) : (
           <div className="product-grid">
