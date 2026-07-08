@@ -4,6 +4,7 @@ import { sendOtp, verifyOtp, saveUser } from '../data/api';
 export default function AuthSheet({ onClose, onSuccess }) {
   const [step, setStep] = useState('phone');
   const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
   const [otp, setOtp] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -12,6 +13,7 @@ export default function AuthSheet({ onClose, onSuccess }) {
   const handlePhone = async () => {
     const clean = phone.replace(/\D/g, '');
     if (clean.length < 9) { setError('To\'g\'ri raqam kiriting'); return; }
+    if (!name.trim()) { setError('Ismingizni kiriting'); return; }
     setLoading(true); setError('');
     try {
       await sendOtp('+998' + clean);
@@ -27,7 +29,11 @@ export default function AuthSheet({ onClose, onSuccess }) {
     try {
       const result = await verifyOtp('+998' + phone.replace(/\D/g, ''), code);
       if (result.token) {
-        const user = { phone: '+998' + phone.replace(/\D/g, ''), token: result.token };
+        const user = {
+          phone: '+998' + phone.replace(/\D/g, ''),
+          name: name.trim(),
+          token: result.token
+        };
         saveUser(user);
         localStorage.setItem('rc_token', result.token);
         onSuccess(user);
@@ -54,29 +60,49 @@ export default function AuthSheet({ onClose, onSuccess }) {
         {step === 'phone' ? (
           <>
             <div className="sheet-title">Kirish</div>
-            <div className="sheet-sub">Telefon raqamingizni kiriting</div>
-            <div className="phone-input-wrap">
-              <span className="phone-prefix">🇺🇿 +998</span>
+            <div className="sheet-sub">Buyurtma berish uchun ma'lumotlaringizni kiriting</div>
+
+            {/* ISM */}
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>Ismingiz</label>
               <input
                 className="phone-input"
-                type="tel"
-                placeholder="90 123 45 67"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handlePhone()}
-                autoFocus
-                maxLength={12}
+                style={{ width: '100%', padding: '14px', border: '1.5px solid var(--border)', borderRadius: 14, fontSize: 15, outline: 'none', fontFamily: 'inherit', background: 'var(--cream)', color: 'var(--text)', fontWeight: 500, transition: 'border-color .2s' }}
+                type="text"
+                placeholder="Masalan: Axmad"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                onBlur={e => e.target.style.borderColor = 'var(--border)'}
               />
             </div>
-            {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 10 }}>{error}</div>}
+
+            {/* TELEFON */}
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>Telefon raqam</label>
+              <div className="phone-input-wrap">
+                <span className="phone-prefix">🇺🇿 +998</span>
+                <input
+                  className="phone-input"
+                  type="tel"
+                  placeholder="90 123 45 67"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handlePhone()}
+                  maxLength={12}
+                />
+              </div>
+            </div>
+
+            {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 10, fontWeight: 500 }}>{error}</div>}
             <button className="sheet-btn" onClick={handlePhone} disabled={loading}>
-              {loading ? 'Yuklanmoqda...' : 'Kod olish'}
+              {loading ? 'Yuklanmoqda...' : 'Kod olish →'}
             </button>
           </>
         ) : (
           <>
             <div className="sheet-title">SMS kod</div>
-            <div className="sheet-sub">+998{phone} raqamiga yuborildi<br />(Test: 1234)</div>
+            <div className="sheet-sub">+998{phone} raqamiga yuborildi<br /><span style={{ fontSize: 12, color: 'var(--text3)' }}>(Test rejimi: 1234)</span></div>
             <div className="otp-inputs">
               {otp.map((v, i) => (
                 <input
@@ -95,11 +121,11 @@ export default function AuthSheet({ onClose, onSuccess }) {
                 />
               ))}
             </div>
-            {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 10, textAlign: 'center' }}>{error}</div>}
+            {error && <div style={{ color: 'var(--red)', fontSize: 13, marginBottom: 10, textAlign: 'center', fontWeight: 500 }}>{error}</div>}
             <button className="sheet-btn" onClick={handleOtp} disabled={loading}>
               {loading ? 'Tekshirilmoqda...' : 'Tasdiqlash'}
             </button>
-            <button onClick={() => setStep('phone')} style={{ width: '100%', background: 'none', border: 'none', color: 'var(--text2)', marginTop: 12, cursor: 'pointer', fontSize: 14 }}>
+            <button onClick={() => setStep('phone')} style={{ width: '100%', background: 'none', border: 'none', color: 'var(--text2)', marginTop: 12, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}>
               ← Orqaga
             </button>
           </>
