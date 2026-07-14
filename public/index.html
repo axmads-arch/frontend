@@ -3,14 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#006241">
+  <meta name="theme-color" content="#1a5c3a">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Rahmat Chef">
+  <meta name="description" content="Rahmat Chef — Premium shirinliklar buyurtma berish">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Rahmat Chef">
+  <meta property="og:description" content="Premium shirinliklar va ichimliklar">
+  <meta property="og:type" content="website">
+
   <title>Rahmat Chef</title>
+  <link rel="manifest" href="/manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <!-- Apple icons -->
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png">
+
+  <!-- Apple splash screens -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #faf8f4; }
+    #splash {
+      position: fixed; inset: 0;
+      background: #1a5c3a;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 9999; transition: opacity .5s;
+    }
+    #splash-logo {
+      width: 80px; height: 80px; border-radius: 24px;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; font-weight: 900; color: white;
+      margin-bottom: 16px;
+      font-family: -apple-system, sans-serif;
+    }
+    #splash-name {
+      font-size: 24px; font-weight: 800; color: white;
+      font-family: -apple-system, sans-serif;
+      letter-spacing: -0.5px;
+    }
+    #splash-sub {
+      font-size: 13px; color: rgba(255,255,255,0.6);
+      margin-top: 6px; font-family: -apple-system, sans-serif;
+    }
+  </style>
 </head>
 <body>
+  <div id="splash">
+    <div id="splash-logo">R</div>
+    <div id="splash-name">Rahmat Chef</div>
+    <div id="splash-sub">Sweet Pastry</div>
+  </div>
   <div id="root"></div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const s = document.getElementById('splash');
+        if (s) { s.style.opacity = '0'; setTimeout(() => s.remove(), 500); }
+      }, 1200);
+    });
+  </script>
 </body>
 </html>
