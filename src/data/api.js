@@ -40,7 +40,6 @@ export async function fetchMyOrders(phone) {
   return r.json();
 }
 
-// Yangi login — kodsiz
 export async function loginUser(phone, name) {
   const r = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
@@ -50,7 +49,6 @@ export async function loginUser(phone, name) {
   return r.json();
 }
 
-// Eski OTP — moslik uchun
 export async function sendOtp(phone) {
   const r = await fetch(`${API_URL}/auth/send-otp`, {
     method: 'POST',
@@ -77,40 +75,26 @@ export function saveCart(cart) {
   localStorage.setItem('rc_cart', JSON.stringify(cart));
 }
 
-// USER — localStorage + cookie ikkalasiga saqlaymiz
+// USER — faqat localStorage, oddiy va ishonchli
 export function getUser() {
   try {
-    // Avval localStorage dan
-    const u = localStorage.getItem('rc_user');
-    if (u && u !== 'null') return JSON.parse(u);
-    // Keyin cookie dan
-    const cookie = document.cookie.split(';').find(c => c.trim().startsWith('rc_user='));
-    if (cookie) {
-      const val = decodeURIComponent(cookie.split('=')[1]);
-      return JSON.parse(val);
-    }
-    return null;
+    const raw = localStorage.getItem('rc_user');
+    if (!raw || raw === 'null' || raw === 'undefined') return null;
+    const user = JSON.parse(raw);
+    if (!user || !user.phone) return null;
+    return user;
   } catch { return null; }
 }
 
 export function saveUser(user) {
-  // localStorage ga saqlash
+  if (!user) return;
   localStorage.setItem('rc_user', JSON.stringify(user));
-  // Cookie ga ham saqlash (1 yil) — Safari uchun
-  const expires = new Date();
-  expires.setFullYear(expires.getFullYear() + 1);
-  document.cookie = `rc_user=${encodeURIComponent(JSON.stringify(user))};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
-  if (user.token) {
-    localStorage.setItem('rc_token', user.token);
-    document.cookie = `rc_token=${user.token};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
-  }
+  if (user.token) localStorage.setItem('rc_token', user.token);
 }
 
 export function removeUser() {
   localStorage.removeItem('rc_user');
   localStorage.removeItem('rc_token');
-  document.cookie = 'rc_user=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-  document.cookie = 'rc_token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
 }
 
 export function totalItems(cart) {
