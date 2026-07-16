@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import { fetchProducts, fetchCategories, fetchBanners, fetchSettings, getCart, saveCart, getUser, totalItems, totalPrice, fmt, getFavorites, toggleFavorite } from './data/api';
+import { fetchProducts, fetchCategories, fetchBanners, fetchSettings, getCart, saveCart, getUser, saveUser, removeUser, totalItems, totalPrice, fmt, getFavorites, toggleFavorite } from './data/api';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
@@ -145,7 +145,7 @@ export default function App() {
       {tab === 'profile' && (
         <Profile
           user={user} onLogin={() => setAuthOpen(true)}
-          onLogout={() => { setUser(null); localStorage.removeItem('rc_user'); localStorage.removeItem('rc_token'); }}
+          onLogout={() => { setUser(null); removeUser(); }}
           settings={settings} favorites={favorites} products={products}
           onAdd={addToCart} fmt={fmt}
           darkMode={darkMode} onToggleDark={() => setDarkMode(d => !d)}
