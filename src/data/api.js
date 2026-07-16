@@ -40,6 +40,17 @@ export async function fetchMyOrders(phone) {
   return r.json();
 }
 
+// Yangi login — kodsiz
+export async function loginUser(phone, name) {
+  const r = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, name }),
+  });
+  return r.json();
+}
+
+// Eski OTP — moslik uchun
 export async function sendOtp(phone) {
   const r = await fetch(`${API_URL}/auth/send-otp`, {
     method: 'POST',
@@ -58,20 +69,48 @@ export async function verifyOtp(phone, otp) {
   return r.json();
 }
 
+// CART
 export function getCart() {
   try { return JSON.parse(localStorage.getItem('rc_cart') || '[]'); } catch { return []; }
 }
-
 export function saveCart(cart) {
   localStorage.setItem('rc_cart', JSON.stringify(cart));
 }
 
+// USER — localStorage + cookie ikkalasiga saqlaymiz
 export function getUser() {
-  try { return JSON.parse(localStorage.getItem('rc_user') || 'null'); } catch { return null; }
+  try {
+    // Avval localStorage dan
+    const u = localStorage.getItem('rc_user');
+    if (u && u !== 'null') return JSON.parse(u);
+    // Keyin cookie dan
+    const cookie = document.cookie.split(';').find(c => c.trim().startsWith('rc_user='));
+    if (cookie) {
+      const val = decodeURIComponent(cookie.split('=')[1]);
+      return JSON.parse(val);
+    }
+    return null;
+  } catch { return null; }
 }
 
 export function saveUser(user) {
+  // localStorage ga saqlash
   localStorage.setItem('rc_user', JSON.stringify(user));
+  // Cookie ga ham saqlash (1 yil) — Safari uchun
+  const expires = new Date();
+  expires.setFullYear(expires.getFullYear() + 1);
+  document.cookie = `rc_user=${encodeURIComponent(JSON.stringify(user))};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  if (user.token) {
+    localStorage.setItem('rc_token', user.token);
+    document.cookie = `rc_token=${user.token};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  }
+}
+
+export function removeUser() {
+  localStorage.removeItem('rc_user');
+  localStorage.removeItem('rc_token');
+  document.cookie = 'rc_user=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+  document.cookie = 'rc_token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
 }
 
 export function totalItems(cart) {
@@ -85,15 +124,13 @@ export function totalPrice(cart, products) {
   }, 0);
 }
 
-// ── SEVIMLILAR ──
+// SEVIMLILAR
 export function getFavorites() {
   try { return JSON.parse(localStorage.getItem('rc_favorites') || '[]'); } catch { return []; }
 }
-
 export function saveFavorites(favs) {
   localStorage.setItem('rc_favorites', JSON.stringify(favs));
 }
-
 export function toggleFavorite(productId, favs) {
   const exists = favs.includes(productId);
   const newFavs = exists ? favs.filter(id => id !== productId) : [...favs, productId];
