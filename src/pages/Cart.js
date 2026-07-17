@@ -23,6 +23,10 @@ const PAYMENTS = [
   },
 ];
 
+// Click va Payme havolalari
+const CLICK_URL = (amount) => `https://indoor.click.uz/pay?id=071752&t=${amount}`;
+const PAYME_URL = (amount) => `https://transfer.paycom.uz/67ff430e8d2fe4b0d3c10d73?a=${amount * 100}`;
+
 function getTimeSlots() {
   const slots = [];
   const now = new Date();
@@ -196,6 +200,12 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
       });
       if (result.id) {
         if (promoApplied) await fetch(`${API_URL}/promo/use`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: promoApplied.code }) });
+        // Click yoki Payme — avtomatik havola ochish
+        if (payment === 'click') {
+          window.open(`https://indoor.click.uz/pay?id=071752&t=${total}`, '_blank');
+        } else if (payment === 'payme') {
+          window.open(`https://transfer.paycom.uz/67ff430e8d2fe4b0d3c10d73?a=${total * 100}`, '_blank');
+        }
         setSuccess(true);
       } else showToast('Xatolik: ' + (result.error || 'Qayta urinib ko\'ring'));
     } catch { showToast('Server bilan bog\'lanishda xatolik'); }
