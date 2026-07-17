@@ -24,8 +24,7 @@ const PAYMENTS = [
 ];
 
 // Click va Payme havolalari
-const CLICK_URL = (amount) => `https://indoor.click.uz/pay?id=071752&t=${amount}`;
-const PAYME_URL = (amount) => `https://transfer.paycom.uz/67ff430e8d2fe4b0d3c10d73?a=${amount * 100}`;
+
 
 function getTimeSlots() {
   const slots = [];
