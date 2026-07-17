@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import { fetchProducts, fetchCategories, fetchBanners, fetchSettings, getCart, saveCart, getUser, saveUser, removeUser, totalItems, totalPrice, fmt, getFavorites, toggleFavorite } from './data/api';
+import { fetchProducts, fetchCategories, fetchBanners, fetchSettings, getCart, saveCart, getUser, removeUser, totalItems, totalPrice, fmt, getFavorites, toggleFavorite } from './data/api';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
@@ -10,7 +10,6 @@ import SearchPage from './components/SearchPage';
 import ProductDetail from './components/ProductDetail';
 import ChatPage from './components/ChatPage';
 
-// NAV SVG ICONS
 const NavIcons = {
   home: (active) => (
     <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -63,12 +62,6 @@ export default function App() {
     localStorage.setItem('rc_dark', darkMode);
   }, [darkMode]);
 
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      setTimeout(() => Notification.requestPermission(), 3000);
-    }
-  }, []);
-
   const showToast = useCallback((msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2200);
@@ -93,7 +86,7 @@ export default function App() {
       ? cart.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i)
       : [...cart, { id: product.id, qty: 1 }];
     updateCart(newCart);
-    showToast('Savatchaga qo\'shildi ✓');
+    showToast("Savatchaga qo'shildi ✓");
   };
 
   const removeFromCart = (productId) => {
@@ -108,7 +101,7 @@ export default function App() {
   const handleToggleFavorite = (productId) => {
     const newFavs = toggleFavorite(productId, favorites);
     setFavorites(newFavs);
-    showToast(newFavs.includes(productId) ? '❤️ Sevimlilarga qo\'shildi' : 'Olib tashlandi');
+    showToast(newFavs.includes(productId) ? "❤️ Sevimlilarga qo'shildi" : 'Olib tashlandi');
   };
 
   const clearCart = () => updateCart([]);
@@ -152,7 +145,6 @@ export default function App() {
         />
       )}
 
-      {/* CART STICKY */}
       {cartCount > 0 && tab === 'home' && (
         <button className="cart-sticky" onClick={() => setTab('cart')}>
           <div className="cart-sticky-left">
@@ -163,7 +155,6 @@ export default function App() {
         </button>
       )}
 
-      {/* BOTTOM NAV */}
       <nav className="bottom-nav">
         {[
           { key: 'home', label: 'Asosiy' },
@@ -185,7 +176,6 @@ export default function App() {
         ))}
       </nav>
 
-      {/* OVERLAYS */}
       {authOpen && (
         <AuthSheet
           onClose={() => setAuthOpen(false)}
