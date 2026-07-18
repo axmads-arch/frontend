@@ -52,63 +52,71 @@ function MapPicker({ onConfirm, selectedPos }) {
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
   const [pos, setPos] = useState(selectedPos || null);
-  const [addr, setAddr] = useState('');
   const [searchQ, setSearchQ] = useState('');
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     if (mapInstanceRef.current) return;
-    if (!document.getElementById('leaflet-css')) {
-      const link = document.createElement('link');
-      link.id = 'leaflet-css';
-      link.rel = 'stylesheet';
-      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
-      document.head.appendChild(link);
-    }
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-    script.onload = () => {
-      const L = window.L;
-      const map = L.map(mapRef.current, { center: [41.3224858, 69.2091613], zoom: 13, zoomControl: true });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
-      const icon = L.divIcon({ html: '<div style="font-size:28px;margin-top:-28px;margin-left:-14px">📍</div>', className: '', iconSize: [28, 28] });
+    const initMap = () => {
+      if (!window.ymaps || !mapRef.current) return;
+      window.ymaps.ready(() => {
+        const map = new window.ymaps.Map(mapRef.current, {
+          center: [41.3224858, 69.2091613],
+          zoom: 13,
+          controls: ['zoomControl'],
+        });
+        mapInstanceRef.current = map;
 
-      map.on('click', async (e) => {
-        const { lat, lng } = e.latlng;
-        if (markerRef.current) markerRef.current.remove();
-        markerRef.current = L.marker([lat, lng], { icon }).addTo(map);
-        setPos({ lat, lng });
-        try {
-          const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
-          const d = await r.json();
-          const a = d.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-          setAddr(a);
-          setSearchQ(a.split(',').slice(0, 3).join(', '));
-        } catch {}
+        map.events.add('click', async (e) => {
+          const coords = e.get('coords');
+          const lat = coords[0], lng = coords[1];
+          if (markerRef.current) markerRef.current.remove();
+          const placemark = new window.ymaps.Placemark([lat, lng], {}, {
+            preset: 'islands#redDotIcon',
+          });
+          map.geoObjects.add(placemark);
+          markerRef.current = placemark;
+          setPos({ lat, lng });
+          try {
+            const r = await window.ymaps.geocode([lat, lng], { results: 1 });
+            const firstObj = r.geoObjects.get(0);
+            const addr = firstObj ? firstObj.getAddressLine() : `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            setSearchQ(addr);
+          } catch {}
+        });
       });
-      mapInstanceRef.current = map;
     };
+
+    if (window.ymaps) { initMap(); return; }
+    const script = document.createElement('script');
+    script.src = 'https://api-maps.yandex.ru/2.1/?lang=uz_UZ&load=package.full';
+    script.onload = initMap;
     document.head.appendChild(script);
-    return () => { if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null; } };
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.destroy();
+        mapInstanceRef.current = null;
+      }
+    };
   }, []);
 
   const search = async () => {
-    if (!searchQ.trim() || !mapInstanceRef.current) return;
+    if (!searchQ.trim() || !mapInstanceRef.current || !window.ymaps) return;
     setSearching(true);
     try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQ)}&format=json&limit=1`);
-      const d = await r.json();
-      if (d.length > 0) {
-        const { lat, lon, display_name } = d[0];
-        const L = window.L;
-        const map = mapInstanceRef.current;
-        map.setView([lat, lon], 16);
+      const res = await window.ymaps.geocode(searchQ, { results: 1 });
+      const obj = res.geoObjects.get(0);
+      if (obj) {
+        const coords = obj.geometry.getCoordinates();
+        const [lat, lng] = coords;
+        mapInstanceRef.current.setCenter(coords, 16);
         if (markerRef.current) markerRef.current.remove();
-        const icon = L.divIcon({ html: '<div style="font-size:28px;margin-top:-28px;margin-left:-14px">📍</div>', className: '', iconSize: [28, 28] });
-        markerRef.current = L.marker([lat, lon], { icon }).addTo(map);
-        setPos({ lat: parseFloat(lat), lng: parseFloat(lon) });
-        setAddr(display_name);
-        setSearchQ(display_name.split(',').slice(0, 3).join(', '));
+        const placemark = new window.ymaps.Placemark(coords, {}, { preset: 'islands#redDotIcon' });
+        mapInstanceRef.current.geoObjects.add(placemark);
+        markerRef.current = placemark;
+        setPos({ lat, lng });
+        setSearchQ(obj.getAddressLine());
       }
     } catch {}
     setSearching(false);
