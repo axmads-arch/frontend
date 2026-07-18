@@ -182,8 +182,10 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
         <MenuItem icon={Icons.instagram} title="Instagram" sub="@rahmatchef.uz"
           action={() => window.open('https://www.instagram.com/rahmatchef.uz', '_blank')} />
 
-        <MenuItem icon={Icons.send} title="Telegram" sub="Kanal va bot"
+        <MenuItem icon={Icons.send} title="Telegram kanal" sub="@rahmatchef"
           action={() => window.open('https://t.me/rahmatchef', '_blank')} />
+        <MenuItem icon={Icons.send} title="Telegram bot" sub="@Rahmatchef_delivery_bot"
+          action={() => window.open('https://t.me/Rahmatchef_delivery_bot', '_blank')} />
 
         <div style={{ height: 8 }} />
         <MenuItem icon={Icons.logout} title="Chiqish" action={onLogout} danger right={null} />
