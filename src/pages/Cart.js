@@ -145,7 +145,7 @@ function MapPicker({ onConfirm, selectedPos }) {
       </div>
       {pos && (
         <button
-          onClick={() => onConfirm(pos, searchQ || addr)}
+          onClick={() => onConfirm(pos, searchQ)}
           style={{ width: '100%', background: 'var(--green)', color: 'white', border: 'none', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
         >✓ Manzilni tasdiqlash</button>
       )}
@@ -188,7 +188,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
     setPromoLoading(false);
   };
 
-  const handleMapConfirm = (p, a) => { setLat(p.lat); setLng(p.lng); setAddress(a); showToast('📍 Manzil belgilandi'); };
+  const handleMapConfirm = (p, a) => { setLat(p.lat); setLng(p.lng); setAddress(a || `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`); showToast('📍 Manzil belgilandi'); };
 
   const placeOrder = async () => {
     if (!user) { onAuthRequired(); return; }
