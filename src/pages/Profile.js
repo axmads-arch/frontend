@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-const Icons = {
-  phone: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>,
-  mapPin: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-  clock: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  instagram: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>,
-  send: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
-  logout: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
-  moon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
-  sun: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>,
-  bell: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
-  download: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
-  chevronRight: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
-  user: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  plus: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+const Ic = {
+  phone: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.63A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>,
+  mapPin: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10C21 17 12 23 12 23S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  clock: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  instagram: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>,
+  telegram: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>,
+  logout: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+  moon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
+  sun: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>,
+  bell: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
+  download: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  chevRight: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+  user: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20C4 17.79 7.58 16 12 16C16.42 16 20 17.79 20 20"/></svg>,
+  plus: <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
 };
 
 function Toggle({ value }) {
@@ -34,7 +34,7 @@ function MenuItem({ icon, title, sub, action, right, danger }) {
         <div className="profile-item-title" style={danger ? { color: '#d93025' } : {}}>{title}</div>
         {sub && <div className="profile-item-sub">{sub}</div>}
       </div>
-      {right !== undefined ? right : <div className="profile-item-arrow">{Icons.chevronRight}</div>}
+      {right !== undefined ? right : <div className="profile-item-arrow">{Ic.chevRight}</div>}
     </div>
   );
 }
@@ -50,7 +50,6 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
     setIsIOS(ios);
     if (window.navigator.standalone) setIsInstalled(true);
-
     const handler = e => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener('beforeinstallprompt', handler);
     window.addEventListener('appinstalled', () => setIsInstalled(true));
@@ -71,7 +70,7 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
     if (notifPerm === 'granted') return;
     const result = await Notification.requestPermission();
     setNotifPerm(result);
-    if (result === 'granted') new Notification('Rahmat Chef 🍰', { body: 'Bildirishnomalar yoqildi!' });
+    if (result === 'granted') new Notification('Rahmat Chef', { body: 'Bildirishnomalar yoqildi!' });
   };
 
   const favProducts = favorites && products ? products.filter(p => favorites.includes(p.id)) : [];
@@ -81,12 +80,8 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setShowIOSGuide(false)}>
       <div style={{ background: 'var(--white)', borderRadius: '24px 24px 0 0', padding: '24px 20px 44px', width: '100%', maxWidth: 480 }} onClick={e => e.stopPropagation()}>
         <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2, margin: '0 auto 20px' }} />
-        <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 20 }}>📱 Ilovani o'rnatish</div>
-        {[
-          'Pastdagi 📤 tugmasini bosing',
-          '"Add to Home Screen" ni tanlang',
-          '"Add" tugmasini bosing',
-        ].map((t, i) => (
+        <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 20 }}>Ilovani o'rnatish</div>
+        {['Pastdagi share tugmasini bosing', '"Add to Home Screen" ni tanlang', '"Add" tugmasini bosing'].map((t, i) => (
           <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 14, alignItems: 'center' }}>
             <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--green)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
             <div style={{ fontSize: 14 }}>{t}</div>
@@ -103,7 +98,7 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
         {showIOSGuide && <IOSGuide />}
         <div className="profile-header" style={{ textAlign: 'center' }}>
           <div className="profile-avatar" style={{ margin: '0 auto 14px' }}>
-            {React.cloneElement(Icons.user, { style: { width: 28, height: 28, color: 'var(--green)' } })}
+            {React.cloneElement(Ic.user, { style: { width: 28, height: 28, color: 'var(--green)' } })}
           </div>
           <div className="profile-name">Mehmon</div>
           <div className="profile-phone">Tizimga kiring</div>
@@ -114,8 +109,7 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
           <button className="login-btn" onClick={onLogin} style={{ marginBottom: 16 }}>Kirish</button>
           {!isInstalled && (installPrompt || isIOS) && (
             <button onClick={handleInstall} style={{ background: 'var(--green-soft)', color: 'var(--green)', border: '1.5px solid var(--green)', borderRadius: 14, padding: '12px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, margin: '0 auto' }}>
-              {React.cloneElement(Icons.download, { style: { width: 16, height: 16 } })}
-              Ilovani o'rnatish
+              {React.cloneElement(Ic.download, { style: { width: 16, height: 16 } })} Ilovani o'rnatish
             </button>
           )}
         </div>
@@ -126,7 +120,6 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
   return (
     <div className="profile-page">
       {showIOSGuide && <IOSGuide />}
-
       <div className="profile-header">
         <div className="profile-avatar">{initials}</div>
         <div className="profile-name">{user.name || 'Foydalanuvchi'}</div>
@@ -138,17 +131,13 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 12 }}>Sevimlilar</div>
           {favProducts.map(p => (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-              {p.image
-                ? <img src={p.image} alt={p.name} style={{ width: 50, height: 50, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
-                : <div style={{ width: 50, height: 50, borderRadius: 12, background: 'var(--cream2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🍰</div>
-              }
+              {p.image ? <img src={p.image} alt={p.name} style={{ width: 50, height: 50, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
+                : <div style={{ width: 50, height: 50, borderRadius: 12, background: 'var(--cream2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🍰</div>}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                 <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{fmt(p.price)}</div>
               </div>
-              <button onClick={() => onAdd(p)} style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                {React.cloneElement(Icons.plus, { style: { width: 16, height: 16 } })}
-              </button>
+              <button onClick={() => onAdd(p)} style={{ background: 'var(--green)', border: 'none', borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>{Ic.plus}</button>
             </div>
           ))}
         </div>
@@ -156,44 +145,25 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
 
       <div className="profile-menu">
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.7px', padding: '16px 0 8px' }}>Ilova</div>
-
         {!isInstalled && (installPrompt || isIOS) && (
-          <MenuItem icon={Icons.download} title="Ilovani o'rnatish" sub="Telefon ekraniga qo'shish" action={handleInstall}
+          <MenuItem icon={Ic.download} title="Ilovani o'rnatish" sub="Telefon ekraniga qo'shish" action={handleInstall}
             right={<div style={{ background: 'var(--green)', color: 'white', borderRadius: 8, padding: '4px 10px', fontSize: 12, fontWeight: 700 }}>O'rnatish</div>} />
         )}
-
-        <MenuItem icon={Icons.bell} title="Bildirishnomalar" sub={notifPerm === 'granted' ? 'Yoqilgan' : "O'chirilgan"} action={handleNotif}
-          right={<Toggle value={notifPerm === 'granted'} />} />
-
-        <MenuItem icon={darkMode ? Icons.sun : Icons.moon} title={darkMode ? 'Kunduzgi rejim' : 'Tungi rejim'}
-          sub={darkMode ? "Qorong'u" : "Yorug'"} action={onToggleDark} right={<Toggle value={darkMode} />} />
+        <MenuItem icon={Ic.bell} title="Bildirishnomalar" sub={notifPerm === 'granted' ? 'Yoqilgan' : "O'chirilgan"} action={handleNotif} right={<Toggle value={notifPerm === 'granted'} />} />
+        <MenuItem icon={darkMode ? Ic.sun : Ic.moon} title={darkMode ? 'Kunduzgi rejim' : 'Tungi rejim'} sub={darkMode ? "Qorong'u" : "Yorug'"} action={onToggleDark} right={<Toggle value={darkMode} />} />
 
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.7px', padding: '16px 0 8px' }}>Kafe</div>
-
-        <MenuItem icon={Icons.clock} title="Ish vaqti" sub="Har kuni, doim ochiq"
-          right={<div style={{ fontSize: 12, fontWeight: 800, color: 'var(--green)', background: 'var(--green-soft)', padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(26,92,58,0.15)' }}>24/7</div>} />
-
-        <MenuItem icon={Icons.mapPin} title="Manzil" sub="Ko'kcha darvoza 340a, Toshkent"
-          action={() => window.open('https://maps.google.com/?q=41.3224858,69.2091613', '_blank')} />
-
-        <MenuItem icon={Icons.phone} title="Aloqa" sub={settings?.phone || '+998 93 272 2222'}
-          action={() => window.open(`tel:${(settings?.phone || '+998932722222').replace(/\s/g, '')}`)} />
-
-        <MenuItem icon={Icons.instagram} title="Instagram" sub="@rahmatchef.uz"
-          action={() => window.open('https://www.instagram.com/rahmatchef.uz', '_blank')} />
-
-        <MenuItem icon={Icons.send} title="Telegram kanal" sub="@rahmatchef"
-          action={() => window.open('https://t.me/rahmatchef', '_blank')} />
-        <MenuItem icon={Icons.send} title="Telegram bot" sub="@Rahmatchef_delivery_bot"
-          action={() => window.open('https://t.me/Rahmatchef_delivery_bot', '_blank')} />
-
+        <MenuItem icon={Ic.clock} title="Ish vaqti" sub="Har kuni, doim ochiq"
+          right={<div style={{ fontSize: 12, fontWeight: 800, color: 'var(--green)', background: 'var(--green-soft)', padding: '4px 10px', borderRadius: 8 }}>24/7</div>} />
+        <MenuItem icon={Ic.mapPin} title="Manzil" sub="Ko'kcha darvoza 340a, Toshkent" action={() => window.open('https://maps.google.com/?q=41.3224858,69.2091613', '_blank')} />
+        <MenuItem icon={Ic.phone} title="Aloqa" sub={settings?.phone || '+998 93 272 2222'} action={() => window.open(`tel:${(settings?.phone || '+998932722222').replace(/\s/g, '')}`)} />
+        <MenuItem icon={Ic.instagram} title="Instagram" sub="@rahmatchef.uz" action={() => window.open('https://www.instagram.com/rahmatchef.uz', '_blank')} />
+        <MenuItem icon={Ic.telegram} title="Telegram kanal" sub="@rahmatchef" action={() => window.open('https://t.me/rahmatchef', '_blank')} />
+        <MenuItem icon={Ic.telegram} title="Telegram bot" sub="@Rahmatchef_delivery_bot" action={() => window.open('https://t.me/Rahmatchef_delivery_bot', '_blank')} />
         <div style={{ height: 8 }} />
-        <MenuItem icon={Icons.logout} title="Chiqish" action={onLogout} danger right={null} />
+        <MenuItem icon={Ic.logout} title="Chiqish" action={onLogout} danger right={null} />
       </div>
-
-      <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text3)', fontSize: 12 }}>
-        © 2026 Rahmat Chef · v2.0
-      </div>
+      <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text3)', fontSize: 12 }}>© 2026 Rahmat Chef · v2.0</div>
     </div>
   );
 }
