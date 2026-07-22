@@ -1,28 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../data/api';
 
-const Icons = {
-  close: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-  heart: <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
-  heartFill: <svg viewBox="0 0 24 24" fill="#ff4757" stroke="#ff4757" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
+const Ic = {
+  close: <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  heart: <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
+  heartFill: <svg viewBox="0 0 24 24" fill="#e53935" stroke="#e53935" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
   plus: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
   minus: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-  star: (filled) => <svg viewBox="0 0 24 24" fill={filled ? '#f59f00' : 'none'} stroke={filled ? '#f59f00' : '#d1cdc7'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  package: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>,
+  starFill: <svg viewBox="0 0 24 24" fill="#f59f00" stroke="#f59f00" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  starEmpty: <svg viewBox="0 0 24 24" fill="none" stroke="#d1cdc7" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
 };
 
 function StarRating({ value, onChange, size = 28 }) {
   const [hover, setHover] = useState(0);
   return (
     <div style={{ display: 'flex', gap: 4 }}>
-      {[1,2,3,4,5].map(i => (
-        <div
-          key={i}
-          style={{ width: size, height: size, cursor: onChange ? 'pointer' : 'default', transition: 'transform .15s' }}
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} style={{ width: size, height: size, cursor: onChange ? 'pointer' : 'default' }}
           onMouseEnter={() => onChange && setHover(i)}
           onMouseLeave={() => onChange && setHover(0)}
-          onClick={() => onChange && onChange(i)}
-        >
-          {Icons.star(i <= (hover || value))}
+          onClick={() => onChange && onChange(i)}>
+          {i <= (hover || value) ? Ic.starFill : Ic.starEmpty}
         </div>
       ))}
     </div>
@@ -74,8 +73,8 @@ export default function ProductDetail({ product, cart, onAdd, onRemove, onClose,
             ? <img className="detail-img" src={product.image} alt={product.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
             : null}
           <div className="detail-img-placeholder" style={{ display: product.image ? 'none' : 'flex' }}>🍰</div>
-          <button className="detail-close" onClick={onClose}>{Icons.close}</button>
-          <button className="detail-fav-btn" onClick={onToggleFav}>{isFav ? Icons.heartFill : Icons.heart}</button>
+          <button className="detail-close" onClick={onClose}>{Ic.close}</button>
+          <button className="detail-fav-btn" onClick={onToggleFav}>{isFav ? Ic.heartFill : Ic.heart}</button>
         </div>
 
         <div className="detail-content">
@@ -96,13 +95,13 @@ export default function ProductDetail({ product, cart, onAdd, onRemove, onClose,
 
           {product.stock !== null && product.stock !== undefined && (
             <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
+              display: 'inline-flex', alignItems: 'center', gap: 6,
               fontSize: 12, fontWeight: 700, marginBottom: 18,
               color: product.stock === 0 ? 'var(--red)' : product.stock <= 5 ? '#d97706' : 'var(--green)',
               background: product.stock === 0 ? '#fef2f2' : product.stock <= 5 ? '#fffbeb' : 'var(--green-soft)',
               padding: '5px 11px', borderRadius: 8,
             }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+              {React.cloneElement(Ic.package, { style: { width: 13, height: 13 } })}
               {product.stock === 0 ? 'Tugagan' : `${product.stock} ta qoldi`}
             </div>
           )}
@@ -111,20 +110,19 @@ export default function ProductDetail({ product, cart, onAdd, onRemove, onClose,
             {qty > 0 ? (
               <>
                 <div className="detail-qty">
-                  <button className="detail-qty-btn" onClick={() => onRemove(product.id)}>{Icons.minus}</button>
+                  <button className="detail-qty-btn" onClick={() => onRemove(product.id)}>{Ic.minus}</button>
                   <span className="detail-qty-num">{qty}</span>
-                  <button className="detail-qty-btn" onClick={() => onAdd(product)} disabled={product.stock !== null && product.stock !== undefined && qty >= product.stock}>{Icons.plus}</button>
+                  <button className="detail-qty-btn" onClick={() => onAdd(product)} disabled={product.stock !== null && product.stock !== undefined && qty >= product.stock}>{Ic.plus}</button>
                 </div>
                 <button className="detail-add-btn" onClick={onClose}>Savatchaga ✓</button>
               </>
             ) : (
               <button className="detail-add-btn" style={{ opacity: product.stock === 0 ? 0.5 : 1 }} onClick={() => onAdd(product)} disabled={product.stock === 0}>
-                {product.stock === 0 ? 'Tugagan' : 'Savatchaga qo\'shish'}
+                {product.stock === 0 ? 'Tugagan' : "Savatchaga qo'shish"}
               </button>
             )}
           </div>
 
-          {/* BAHO */}
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20 }}>
             <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.3px', marginBottom: 14 }}>Baho berish</div>
             {rSuccess ? (
@@ -141,18 +139,17 @@ export default function ProductDetail({ product, cart, onAdd, onRemove, onClose,
                   onChange={e => setMyComment(e.target.value)}
                 />
                 {rError && <div style={{ color: 'var(--red)', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>{rError}</div>}
-                <button
-                  onClick={submitRating}
-                  disabled={rLoading || !myStars}
-                  style={{ width: '100%', background: myStars ? 'var(--green)' : 'var(--border)', color: myStars ? 'white' : 'var(--text3)', border: 'none', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: myStars ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}
-                >{rLoading ? 'Yuklanmoqda...' : 'Baho berish'}</button>
+                <button onClick={submitRating} disabled={rLoading || !myStars}
+                  style={{ width: '100%', background: myStars ? 'var(--green)' : 'var(--border)', color: myStars ? 'white' : 'var(--text3)', border: 'none', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: myStars ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>
+                  {rLoading ? 'Yuklanmoqda...' : 'Baho berish'}
+                </button>
               </>
             )}
           </div>
 
           {ratings.length > 0 && (
             <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, letterSpacing: '-0.2px' }}>Izohlar</div>
+              <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12 }}>Izohlar</div>
               {ratings.slice(0, 5).map(r => (
                 <div key={r.id} style={{ padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
