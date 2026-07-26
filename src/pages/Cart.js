@@ -403,17 +403,53 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         {/* TO'LOV */}
         <div className="checkout-card">
           <div className="checkout-title">To'lov usuli</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
-            {PAYMENTS.map(p => (
-              <div
-                key={p.id}
-                className={`pay-opt ${payment === p.id ? 'active' : ''}`}
-                onClick={() => setPayment(p.id)}
-              >
-                <div className="pay-opt-icon">{p.icon}</div>
-                <span className="pay-label">{p.label}</span>
+
+          {/* Click va Payme */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+            <div className={`pay-opt ${payment === 'click' ? 'active' : ''}`} onClick={() => setPayment('click')}>
+              <div className="pay-opt-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
               </div>
-            ))}
+              <span className="pay-label">Click</span>
+            </div>
+            <div className={`pay-opt ${payment === 'payme' ? 'active' : ''}`} onClick={() => setPayment('payme')}>
+              <div className="pay-opt-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+              <span className="pay-label">Payme</span>
+            </div>
+          </div>
+
+          {/* Karta raqami */}
+          <div
+            className={`pay-opt ${payment === 'card' ? 'active' : ''}`}
+            onClick={() => setPayment('card')}
+            style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '12px 14px', gap: 8 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+              <div className="pay-opt-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+              </div>
+              <span className="pay-label" style={{ fontSize: 13 }}>Karta orqali o'tkazma</span>
+            </div>
+            <div style={{ width: '100%', background: payment === 'card' ? 'rgba(26,92,58,0.08)' : 'var(--cream)', borderRadius: 10, padding: '10px 12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: 15, fontWeight: 800, letterSpacing: '1px', color: 'var(--text)' }}>9860 3401 0366 2565</span>
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText('9860340103662565');
+                    const el = e.currentTarget;
+                    el.textContent = '✓';
+                    setTimeout(() => el.textContent = '', 1500);
+                  }}
+                  style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: 8, padding: '4px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0, minWidth: 36 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>Yusupov Kozim</div>
+            </div>
           </div>
         </div>
 
