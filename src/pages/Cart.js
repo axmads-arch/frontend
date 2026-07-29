@@ -137,7 +137,9 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
   const [comment, setComment] = useState('');
-  const [payment, setPayment] = useState('cash');
+  const [payment, setPayment] = useState('click');
+  const [checkImage, setCheckImage] = useState(null);
+  const [checkUploading, setCheckUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [scheduleType, setScheduleType] = useState('now');
@@ -168,29 +170,39 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
 
   const handleMapConfirm = (p, a) => { setLat(p.lat); setLng(p.lng); setAddress(a || `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`); showToast('📍 Manzil belgilandi'); };
 
+  // Chek rasmini ImgBB ga yuklash
+  const uploadCheck = async (file) => {
+    setCheckUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const r = await fetch('https://api.imgbb.com/1/upload?key=b59b77453337b7d29c865ed75ad39305', { method: 'POST', body: formData });
+      const d = await r.json();
+      if (d.data?.url) { setCheckImage(d.data.url); showToast('✅ Chek yuklandi!'); }
+      else showToast('Xatolik: rasm yuklanmadi');
+    } catch { showToast('Rasm yuklashda xatolik'); }
+    setCheckUploading(false);
+  };
+
   const placeOrder = async () => {
     if (!user) { onAuthRequired(); return; }
     if (deliveryType === 'delivery' && !address.trim()) { showToast('Manzilni belgilang!'); return; }
     if (scheduleType === 'scheduled' && !selectedSlot) { showToast('Vaqtni tanlang!'); return; }
+    if (!checkImage) { showToast("To'lov chekini yuklang!"); return; }
     setLoading(true);
     try {
       const result = await createOrder({
         customerPhone: user.phone, customerName: user.name || user.phone,
         deliveryType, paymentMethod: payment,
         address: deliveryType === 'delivery' ? address : '',
-        comment, totalPrice: total, latitude: lat, longitude: lng,
+        comment: `${comment ? comment + '\n' : ''}Chek: ${checkImage}`,
+        totalPrice: total, latitude: lat, longitude: lng,
         promoCode: promoApplied ? promoApplied.code : null, discount,
         scheduledTime: scheduleType === 'scheduled' && selectedSlot ? selectedSlot.date.toISOString() : null,
         items: cart.map(i => ({ productId: i.id, quantity: i.qty, price: products.find(p => p.id === i.id)?.price || 0 })),
       });
       if (result.id) {
         if (promoApplied) await fetch(`${API_URL}/promo/use`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: promoApplied.code }) });
-        // Click yoki Payme — avtomatik havola ochish
-        if (payment === 'click') {
-          window.open(`https://indoor.click.uz/pay?id=071752&t=${total}`, '_blank');
-        } else if (payment === 'payme') {
-          window.open(`https://transfer.paycom.uz/67ff430e8d2fe4b0d3c10d73?a=${total * 100}`, '_blank');
-        }
         setSuccess(true);
       } else showToast('Xatolik: ' + (result.error || 'Qayta urinib ko\'ring'));
     } catch { showToast('Server bilan bog\'lanishda xatolik'); }
@@ -382,7 +394,6 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         <div className="checkout-card">
           <div className="checkout-title">To'lov usuli</div>
 
-          {/* Click va Payme */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
             <div className={`pay-opt ${payment === 'click' ? 'active' : ''}`} onClick={() => setPayment('click')}>
               <div className="pay-opt-icon">
@@ -398,7 +409,6 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
             </div>
           </div>
 
-          {/* Karta raqami */}
           <div
             className={`pay-opt ${payment === 'card' ? 'active' : ''}`}
             onClick={() => setPayment('card')}
@@ -418,10 +428,10 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
                     e.stopPropagation();
                     navigator.clipboard.writeText('9860340103662565');
                     const el = e.currentTarget;
-                    el.textContent = '✓';
-                    setTimeout(() => el.textContent = '', 1500);
+                    el.innerHTML = '✓';
+                    setTimeout(() => el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>', 1500);
                   }}
-                  style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: 8, padding: '4px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0, minWidth: 36 }}
+                  style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: 8, padding: '4px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0, width: 36, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                 </button>
@@ -429,6 +439,51 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
               <div style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>Yusupov Kozim</div>
             </div>
           </div>
+
+          {/* To'lov tugmasi */}
+          <button
+            onClick={() => {
+              if (payment === 'click') window.open(`https://indoor.click.uz/pay?id=071752&t=${total}`, '_blank');
+              else if (payment === 'payme') window.open(`https://transfer.paycom.uz/67ff430e8d2fe4b0d3c10d73?a=${total * 100}`, '_blank');
+            }}
+            style={{ width: '100%', marginTop: 10, background: payment === 'card' ? 'var(--border)' : 'var(--green)', color: payment === 'card' ? 'var(--text3)' : 'white', border: 'none', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: payment === 'card' ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: payment === 'card' ? 'none' : 'block' }}
+          >
+            {payment === 'click' ? '✦ Click orqali to\'lash' : '✦ Payme orqali to\'lash'} — {fmt(total)}
+          </button>
+        </div>
+
+        {/* CHEK YUKLASH */}
+        <div className="checkout-card">
+          <div className="checkout-title">To'lov chekini yuklang</div>
+          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 12, lineHeight: 1.5 }}>
+            To'lov qilgandan so'ng chek screenshotini yuklang — buyurtmangiz tasdiqlanadi
+          </div>
+          {checkImage ? (
+            <div style={{ position: 'relative' }}>
+              <img src={checkImage} alt="Chek" style={{ width: '100%', borderRadius: 12, border: '2px solid var(--green)', maxHeight: 240, objectFit: 'cover' }} />
+              <div style={{ marginTop: 8, fontSize: 12, color: 'var(--green)', fontWeight: 700, textAlign: 'center' }}>✅ Chek yuklandi</div>
+              <button
+                onClick={() => setCheckImage(null)}
+                style={{ position: 'absolute', top: 8, right: 8, background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, width: 28, height: 28, cursor: 'pointer', fontSize: 14, fontWeight: 700 }}
+              >✕</button>
+            </div>
+          ) : (
+            <label style={{ display: 'block', cursor: 'pointer' }}>
+              <div style={{ border: '2px dashed var(--border)', borderRadius: 14, padding: '24px 16px', textAlign: 'center', background: 'var(--cream)', transition: 'border-color .2s' }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
+                  {checkUploading ? 'Yuklanmoqda...' : 'Chek rasmini yuklash'}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text3)' }}>Galereya yoki kamera</div>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={e => { if (e.target.files[0]) uploadCheck(e.target.files[0]); }}
+              />
+            </label>
+          )}
         </div>
 
         {/* HISOB */}
