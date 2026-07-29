@@ -3,18 +3,6 @@ import { createOrder, API_URL } from '../data/api';
 
 const CATS_ICONS = { 'Cheesecake': '🍰', 'Medovik': '🍯', 'Tort': '🎂', 'Kofe': '☕', 'Choy': '🍵', 'Ichimlik': '🥤' };
 
-// To'lov usullari — Uzum o'chirildi, SVG iconlar
-    id: 'payme', label: 'Payme',
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-  },
-  {
-    id: 'card', label: 'Karta',
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
-  },
-];
-
-// Click va Payme havolalari
-
 
 function getTimeSlots() {
   const slots = [];
