@@ -10,34 +10,28 @@ import SearchPage from './components/SearchPage';
 import ProductDetail from './components/ProductDetail';
 import ChatPage from './components/ChatPage';
 
-// NAV ICONS
-const NavIcon = {
-  home: (active) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "1.75"} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21V15C9 15 9 13 12 13C15 13 15 15 15 15V21M9 21H15"/>
-    </svg>
-  ),
-  cart: (active) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "1.75"} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 2L3 6V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V6L18 2H6Z"/>
-      <path d="M3 6H21"/>
-      <path d="M16 10C16 12.21 14.21 14 12 14C9.79 14 8 12.21 8 10"/>
-    </svg>
-  ),
-  orders: (active) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "1.75"} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 5H7C5.9 5 5 5.9 5 7V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V7C19 5.9 18.1 5 17 5H15"/>
-      <path d="M9 5C9 3.9 9.9 3 11 3H13C14.1 3 15 3.9 15 5V7H9V5Z"/>
-      <path d="M9 12H15"/><path d="M9 16H12"/>
-    </svg>
-  ),
-  profile: (active) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "1.75"} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="4"/>
-      <path d="M4 20C4 17.79 7.58 16 12 16C16.42 16 20 17.79 20 20"/>
-    </svg>
-  ),
-};
+// Material Symbols Rounded icon komponenti
+const Ms = ({ icon, size = 24, fill = 1, style = {} }) => (
+  <span
+    className="ms"
+    style={{
+      fontFamily: 'Material Symbols Rounded',
+      fontVariationSettings: `'FILL' ${fill}, 'wght' 400, 'GRAD' 0, 'opsz' ${size}`,
+      fontSize: size,
+      lineHeight: 1,
+      display: 'inline-block',
+      userSelect: 'none',
+      ...style
+    }}
+  >{icon}</span>
+);
+
+const NAV = [
+  { key: 'home', label: 'Asosiy', icon: 'home' },
+  { key: 'cart', label: 'Savatcha', icon: 'shopping_bag' },
+  { key: 'orders', label: 'Buyurtmalar', icon: 'receipt_long' },
+  { key: 'profile', label: 'Profil', icon: 'person' },
+];
 
 export default function App() {
   const [tab, setTab] = useState('home');
@@ -114,6 +108,7 @@ export default function App() {
       {tab === 'orders' && <Orders user={user} onAuthRequired={() => setAuthOpen(true)} fmt={fmt} />}
       {tab === 'profile' && <Profile user={user} onLogin={() => setAuthOpen(true)} onLogout={() => { setUser(null); removeUser(); }} settings={settings} favorites={favorites} products={products} onAdd={addToCart} fmt={fmt} darkMode={darkMode} onToggleDark={() => setDarkMode(d => !d)} />}
 
+      {/* CART STICKY */}
       {cartCount > 0 && tab === 'home' && (
         <button className="cart-sticky" onClick={() => setTab('cart')}>
           <div className="cart-sticky-left">
@@ -124,19 +119,22 @@ export default function App() {
         </button>
       )}
 
+      {/* BOTTOM NAV */}
       <nav className="bottom-nav">
-        {[
-          { key: 'home', label: 'Asosiy' },
-          { key: 'cart', label: 'Savatcha' },
-          { key: 'orders', label: 'Buyurtmalar' },
-          { key: 'profile', label: 'Profil' },
-        ].map(item => (
-          <button key={item.key} className={`nav-item ${tab === item.key ? 'active' : ''}`} onClick={() => setTab(item.key)}>
-            {cartCount > 0 && item.key === 'cart' && <span className="nav-badge">{cartCount}</span>}
-            {NavIcon[item.key](tab === item.key)}
-            <span className="nav-label">{item.label}</span>
-          </button>
-        ))}
+        {NAV.map(item => {
+          const active = tab === item.key;
+          return (
+            <button key={item.key} className={`nav-item ${active ? 'active' : ''}`} onClick={() => setTab(item.key)}>
+              <div style={{ position: 'relative' }}>
+                {cartCount > 0 && item.key === 'cart' && (
+                  <span className="nav-badge">{cartCount}</span>
+                )}
+                <Ms icon={item.icon} size={24} fill={active ? 1 : 0} />
+              </div>
+              <span className="nav-label">{item.label}</span>
+            </button>
+          );
+        })}
       </nav>
 
       {authOpen && <AuthSheet onClose={() => setAuthOpen(false)} onSuccess={u => { setUser(u); setAuthOpen(false); showToast('Xush kelibsiz! 👋'); }} />}
