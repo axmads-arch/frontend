@@ -10,22 +10,6 @@ import SearchPage from './components/SearchPage';
 import ProductDetail from './components/ProductDetail';
 import ChatPage from './components/ChatPage';
 
-// Material Symbols Rounded icon komponenti
-const Ms = ({ icon, size = 24, fill = 1, style = {} }) => (
-  <span
-    className="ms"
-    style={{
-      fontFamily: 'Material Symbols Rounded',
-      fontVariationSettings: `'FILL' ${fill}, 'wght' 400, 'GRAD' 0, 'opsz' ${size}`,
-      fontSize: size,
-      lineHeight: 1,
-      display: 'inline-block',
-      userSelect: 'none',
-      ...style
-    }}
-  >{icon}</span>
-);
-
 const NAV = [
   { key: 'home', label: 'Asosiy', icon: 'home' },
   { key: 'cart', label: 'Savatcha', icon: 'shopping_bag' },
@@ -56,8 +40,7 @@ export default function App() {
   }, [darkMode]);
 
   const showToast = useCallback((msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), 2200);
+    setToast(msg); setTimeout(() => setToast(''), 2200);
   }, []);
 
   useEffect(() => {
@@ -108,7 +91,6 @@ export default function App() {
       {tab === 'orders' && <Orders user={user} onAuthRequired={() => setAuthOpen(true)} fmt={fmt} />}
       {tab === 'profile' && <Profile user={user} onLogin={() => setAuthOpen(true)} onLogout={() => { setUser(null); removeUser(); }} settings={settings} favorites={favorites} products={products} onAdd={addToCart} fmt={fmt} darkMode={darkMode} onToggleDark={() => setDarkMode(d => !d)} />}
 
-      {/* CART STICKY */}
       {cartCount > 0 && tab === 'home' && (
         <button className="cart-sticky" onClick={() => setTab('cart')}>
           <div className="cart-sticky-left">
@@ -119,17 +101,18 @@ export default function App() {
         </button>
       )}
 
-      {/* BOTTOM NAV */}
       <nav className="bottom-nav">
         {NAV.map(item => {
           const active = tab === item.key;
           return (
             <button key={item.key} className={`nav-item ${active ? 'active' : ''}`} onClick={() => setTab(item.key)}>
               <div style={{ position: 'relative' }}>
-                {cartCount > 0 && item.key === 'cart' && (
-                  <span className="nav-badge">{cartCount}</span>
-                )}
-                <Ms icon={item.icon} size={24} fill={active ? 1 : 0} />
+                {cartCount > 0 && item.key === 'cart' && <span className="nav-badge">{cartCount}</span>}
+                <span className="material-symbols-rounded" style={{
+                  fontSize: 24,
+                  fontVariationSettings: `'FILL' ${active ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 24`,
+                  color: active ? 'var(--green)' : 'var(--text3)'
+                }}>{item.icon}</span>
               </div>
               <span className="nav-label">{item.label}</span>
             </button>
