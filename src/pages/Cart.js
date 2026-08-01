@@ -3,6 +3,14 @@ import { createOrder, API_URL } from '../data/api';
 
 const CATS_ICONS = { 'Cheesecake': '🍰', 'Medovik': '🍯', 'Tort': '🎂', 'Kofe': '☕', 'Choy': '🍵', 'Ichimlik': '🥤' };
 
+// Material Symbol
+const Ms = ({ icon, size = 20, fill = 1, color = 'currentColor' }) => (
+  <span style={{
+    fontFamily: 'Material Symbols Rounded',
+    fontVariationSettings: `'FILL' ${fill}, 'wght' 400, 'GRAD' 0, 'opsz' ${size}`,
+    fontSize: size, lineHeight: 1, display: 'inline-block', userSelect: 'none', color,
+  }}>{icon}</span>
+);
 
 function getTimeSlots() {
   const slots = [];
@@ -24,7 +32,6 @@ function getTimeSlots() {
   return slots;
 }
 
-// Xarita komponenti — doim ko'rinib turadi
 function MapPicker({ onConfirm, selectedPos }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -38,45 +45,30 @@ function MapPicker({ onConfirm, selectedPos }) {
     const initMap = () => {
       if (!window.ymaps || !mapRef.current) return;
       window.ymaps.ready(() => {
-        const map = new window.ymaps.Map(mapRef.current, {
-          center: [41.3224858, 69.2091613],
-          zoom: 13,
-          controls: ['zoomControl'],
-        });
+        const map = new window.ymaps.Map(mapRef.current, { center: [41.3224858, 69.2091613], zoom: 13, controls: ['zoomControl'] });
         mapInstanceRef.current = map;
-
         map.events.add('click', async (e) => {
           const coords = e.get('coords');
           const lat = coords[0], lng = coords[1];
           if (markerRef.current) markerRef.current.remove();
-          const placemark = new window.ymaps.Placemark([lat, lng], {}, {
-            preset: 'islands#redDotIcon',
-          });
+          const placemark = new window.ymaps.Placemark([lat, lng], {}, { preset: 'islands#redDotIcon' });
           map.geoObjects.add(placemark);
           markerRef.current = placemark;
           setPos({ lat, lng });
           try {
             const r = await window.ymaps.geocode([lat, lng], { results: 1 });
             const firstObj = r.geoObjects.get(0);
-            const addr = firstObj ? firstObj.getAddressLine() : `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-            setSearchQ(addr);
+            setSearchQ(firstObj ? firstObj.getAddressLine() : `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
           } catch {}
         });
       });
     };
-
     if (window.ymaps) { initMap(); return; }
     const script = document.createElement('script');
     script.src = 'https://api-maps.yandex.ru/2.1/?lang=uz_UZ&load=package.full';
     script.onload = initMap;
     document.head.appendChild(script);
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.destroy();
-        mapInstanceRef.current = null;
-      }
-    };
+    return () => { if (mapInstanceRef.current) { mapInstanceRef.current.destroy(); mapInstanceRef.current = null; } };
   }, []);
 
   const search = async () => {
@@ -110,22 +102,18 @@ function MapPicker({ onConfirm, selectedPos }) {
           onChange={e => setSearchQ(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && search()}
         />
-        <button
-          onClick={search}
-          disabled={searching}
-          style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: 12, padding: '0 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
-        >{searching ? '...' : 'Qidir'}</button>
+        <button onClick={search} disabled={searching}
+          style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: 12, padding: '0 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+          {searching ? '...' : 'Qidir'}
+        </button>
       </div>
-      {/* Xarita doim ko'rinib turadi */}
       <div ref={mapRef} style={{ width: '100%', height: 220, borderRadius: 14, overflow: 'hidden', border: '1.5px solid var(--border)' }} />
-      <div style={{ fontSize: 11, color: 'var(--text3)', margin: '6px 0 8px', fontWeight: 500 }}>
-        Xaritada bosib aniq manzilni belgilang
-      </div>
+      <div style={{ fontSize: 11, color: 'var(--text3)', margin: '6px 0 8px', fontWeight: 500 }}>Xaritada bosib aniq manzilni belgilang</div>
       {pos && (
-        <button
-          onClick={() => onConfirm(pos, searchQ)}
-          style={{ width: '100%', background: 'var(--green)', color: 'white', border: 'none', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
-        >✓ Manzilni tasdiqlash</button>
+        <button onClick={() => onConfirm(pos, searchQ)}
+          style={{ width: '100%', background: 'var(--green)', color: 'white', border: 'none', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+          ✓ Manzilni tasdiqlash
+        </button>
       )}
     </div>
   );
@@ -163,14 +151,13 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
       const r = await fetch(`${API_URL}/promo/check`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: promoCode.trim().toUpperCase(), orderTotal: subtotal }) });
       const d = await r.json();
       if (d.valid) { setPromoApplied({ code: promoCode.trim().toUpperCase(), discount: d.discount, ...d.promo }); showToast(`🎁 Chegirma: -${fmt(d.discount)}`); }
-      else setPromoError(d.error || 'Promo kod noto\'g\'ri');
+      else setPromoError(d.error || "Promo kod noto'g'ri");
     } catch { setPromoError('Xatolik'); }
     setPromoLoading(false);
   };
 
   const handleMapConfirm = (p, a) => { setLat(p.lat); setLng(p.lng); setAddress(a || `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`); showToast('📍 Manzil belgilandi'); };
 
-  // Chek rasmini ImgBB ga yuklash
   const uploadCheck = async (file) => {
     setCheckUploading(true);
     try {
@@ -204,8 +191,8 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
       if (result.id) {
         if (promoApplied) await fetch(`${API_URL}/promo/use`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: promoApplied.code }) });
         setSuccess(true);
-      } else showToast('Xatolik: ' + (result.error || 'Qayta urinib ko\'ring'));
-    } catch { showToast('Server bilan bog\'lanishda xatolik'); }
+      } else showToast('Xatolik: ' + (result.error || "Qayta urinib ko'ring"));
+    } catch { showToast("Server bilan bog'lanishda xatolik"); }
     setLoading(false);
   };
 
@@ -213,11 +200,9 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
     return (
       <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: '100vh' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 80, marginBottom: 20 }}>🎉</div>
-          <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 10, letterSpacing: '-0.5px' }}>Buyurtma qabul qilindi!</h2>
-          <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 8, lineHeight: 1.6 }}>
-            {scheduleType === 'scheduled' && selectedSlot ? `⏰ ${selectedSlot.label}` : 'Tez orada operator bog\'lanadi'}
-          </p>
+          <div style={{ fontSize: 72, marginBottom: 20 }}>🎉</div>
+          <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 10 }}>Buyurtma qabul qilindi!</h2>
+          <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 8 }}>{scheduleType === 'scheduled' && selectedSlot ? `⏰ ${selectedSlot.label}` : "Tez orada operator bog'lanadi"}</p>
           <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 32 }}>📞 {settings?.phone || '+998 93 272 2222'}</p>
           <button className="order-btn" style={{ maxWidth: 260, margin: '0 auto' }} onClick={onOrderSuccess}>Buyurtmalarni ko'rish →</button>
         </div>
@@ -229,15 +214,11 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
     return (
       <div className="page">
         <div className="page-header">
-          <button className="back-btn" onClick={onBack}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
+          <button className="back-btn" onClick={onBack}><Ms icon="arrow_back_ios" size={20} fill={0} /></button>
           <span className="page-title">Savatcha</span>
         </div>
         <div className="empty-cart">
-          <div className="empty-cart-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-          </div>
+          <div className="empty-cart-icon"><Ms icon="shopping_bag" size={56} fill={0} color="var(--text3)" /></div>
           <h3>Savatcha bo'sh</h3>
           <p>Mahsulotlarni qo'shib boshlang</p>
         </div>
@@ -248,9 +229,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
   return (
     <div className="cart-page">
       <div className="page-header">
-        <button className="back-btn" onClick={onBack}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
+        <button className="back-btn" onClick={onBack}><Ms icon="arrow_back_ios" size={20} fill={0} /></button>
         <span className="page-title">Savatcha</span>
         <button onClick={onClearCart} style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Tozalash</button>
       </div>
@@ -259,24 +238,16 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
       <div className="cart-items">
         {cartItems.map(item => (
           <div key={item.id} className="cart-item">
-            {item.product.image
-              ? <img className="cart-item-img" src={item.product.image} alt={item.product.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-              : null}
-            <div className="cart-item-img-placeholder" style={{ display: item.product.image ? 'none' : 'flex' }}>
-              {CATS_ICONS[item.product.category] || '🍰'}
-            </div>
+            {item.product.image ? <img className="cart-item-img" src={item.product.image} alt={item.product.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} /> : null}
+            <div className="cart-item-img-placeholder" style={{ display: item.product.image ? 'none' : 'flex' }}>{CATS_ICONS[item.product.category] || '🍰'}</div>
             <div className="cart-item-info">
               <div className="cart-item-name">{item.product.name}</div>
               <div className="cart-item-price">{fmt(item.product.price * item.qty)}</div>
             </div>
             <div className="cart-item-qty">
-              <button className="qty-btn2" onClick={() => onRemove(item.id)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </button>
+              <button className="qty-btn2" onClick={() => onRemove(item.id)}><Ms icon="remove" size={18} fill={1} /></button>
               <span className="qty-num2">{item.qty}</span>
-              <button className="qty-btn2" onClick={() => onAdd(item.product)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </button>
+              <button className="qty-btn2" onClick={() => onAdd(item.product)}><Ms icon="add" size={18} fill={1} /></button>
             </div>
           </div>
         ))}
@@ -289,38 +260,27 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           <div className="checkout-title">Yetkazish turi</div>
           <div className="delivery-toggle">
             <div className={`delivery-opt ${deliveryType === 'delivery' ? 'active' : ''}`} onClick={() => setDeliveryType('delivery')}>
-              <div className="delivery-opt-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-              </div>
+              <div className="delivery-opt-icon"><Ms icon="local_shipping" size={24} fill={1} color={deliveryType === 'delivery' ? 'var(--green)' : 'var(--text2)'} /></div>
               <div className="delivery-opt-label">Yetkazib berish</div>
               <div className="delivery-opt-sub">{fmt(settings?.deliveryPrice || 10000)}</div>
             </div>
             <div className={`delivery-opt ${deliveryType === 'pickup' ? 'active' : ''}`} onClick={() => setDeliveryType('pickup')}>
-              <div className="delivery-opt-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-              </div>
+              <div className="delivery-opt-icon"><Ms icon="storefront" size={24} fill={1} color={deliveryType === 'pickup' ? 'var(--green)' : 'var(--text2)'} /></div>
               <div className="delivery-opt-label">Olib ketish</div>
               <div className="delivery-opt-sub">Bepul</div>
             </div>
           </div>
         </div>
 
-        {/* MANZIL + XARITA — doim ko'rinadi */}
+        {/* MANZIL + XARITA */}
         {deliveryType === 'delivery' && (
           <div className="checkout-card">
             <div className="checkout-title">Yetkazib berish manzili</div>
-            <input
-              className="field-input"
-              style={{ marginBottom: 12 }}
-              placeholder="Ko'cha, uy raqami, mo'ljal..."
-              value={address}
-              onChange={e => setAddress(e.target.value)}
-            />
-            {/* XARITA DOIM KO'RINIB TURADI */}
+            <input className="field-input" style={{ marginBottom: 12 }} placeholder="Ko'cha, uy raqami, mo'ljal..." value={address} onChange={e => setAddress(e.target.value)} />
             <MapPicker onConfirm={handleMapConfirm} selectedPos={lat ? { lat, lng } : null} />
             {lat && lng && (
               <div style={{ marginTop: 8, fontSize: 12, color: 'var(--green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--green)" stroke="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                <Ms icon="check_circle" size={14} fill={1} color="var(--green)" />
                 Xaritadan manzil belgilandi
                 <button onClick={() => { setLat(null); setLng(null); }} style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: 12, marginLeft: 4 }}>✕</button>
               </div>
@@ -333,16 +293,12 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           <div className="checkout-title">Yetkazish vaqti</div>
           <div className="delivery-toggle">
             <div className={`delivery-opt ${scheduleType === 'now' ? 'active' : ''}`} onClick={() => { setScheduleType('now'); setSelectedSlot(null); }}>
-              <div className="delivery-opt-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </div>
+              <div className="delivery-opt-icon"><Ms icon="bolt" size={24} fill={1} color={scheduleType === 'now' ? 'var(--green)' : 'var(--text2)'} /></div>
               <div className="delivery-opt-label">Iloji boricha tez</div>
               <div className="delivery-opt-sub">~40-60 daqiqa</div>
             </div>
             <div className={`delivery-opt ${scheduleType === 'scheduled' ? 'active' : ''}`} onClick={() => setScheduleType('scheduled')}>
-              <div className="delivery-opt-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
+              <div className="delivery-opt-icon"><Ms icon="schedule" size={24} fill={1} color={scheduleType === 'scheduled' ? 'var(--green)' : 'var(--text2)'} /></div>
               <div className="delivery-opt-label">Vaqt belgilash</div>
               <div className="delivery-opt-sub">Kerakli vaqtga</div>
             </div>
@@ -351,9 +307,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
             <>
               <div className="time-slots">
                 {timeSlots.map(slot => (
-                  <button key={slot.key} className={`time-slot ${selectedSlot?.key === slot.key ? 'active' : ''}`} onClick={() => setSelectedSlot(slot)}>
-                    {slot.label}
-                  </button>
+                  <button key={slot.key} className={`time-slot ${selectedSlot?.key === slot.key ? 'active' : ''}`} onClick={() => setSelectedSlot(slot)}>{slot.label}</button>
                 ))}
               </div>
               {selectedSlot && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--green)', fontWeight: 700 }}>✓ {selectedSlot.label}</div>}
@@ -372,7 +326,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
           <div className="checkout-title">Promo kod</div>
           {promoApplied ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--green-soft)', borderRadius: 12, padding: '12px 14px', border: '1.5px solid var(--green)' }}>
-              <span style={{ fontSize: 18 }}>🎁</span>
+              <Ms icon="redeem" size={20} fill={1} color="var(--green)" />
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 800, color: 'var(--green)', fontSize: 14 }}>{promoApplied.code}</div>
                 <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>-{fmt(promoApplied.discount)} chegirma</div>
@@ -393,31 +347,20 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         {/* TO'LOV */}
         <div className="checkout-card">
           <div className="checkout-title">To'lov usuli</div>
-
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
             <div className={`pay-opt ${payment === 'click' ? 'active' : ''}`} onClick={() => setPayment('click')}>
-              <div className="pay-opt-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-              </div>
+              <div className="pay-opt-icon"><Ms icon="smartphone" size={22} fill={1} color={payment === 'click' ? 'var(--green)' : 'var(--text2)'} /></div>
               <span className="pay-label">Click</span>
             </div>
             <div className={`pay-opt ${payment === 'payme' ? 'active' : ''}`} onClick={() => setPayment('payme')}>
-              <div className="pay-opt-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              </div>
+              <div className="pay-opt-icon"><Ms icon="payments" size={22} fill={1} color={payment === 'payme' ? 'var(--green)' : 'var(--text2)'} /></div>
               <span className="pay-label">Payme</span>
             </div>
           </div>
 
-          <div
-            className={`pay-opt ${payment === 'card' ? 'active' : ''}`}
-            onClick={() => setPayment('card')}
-            style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '12px 14px', gap: 8 }}
-          >
+          <div className={`pay-opt ${payment === 'card' ? 'active' : ''}`} onClick={() => setPayment('card')} style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '12px 14px', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-              <div className="pay-opt-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
-              </div>
+              <div className="pay-opt-icon"><Ms icon="credit_card" size={22} fill={1} color={payment === 'card' ? 'var(--green)' : 'var(--text2)'} /></div>
               <span className="pay-label" style={{ fontSize: 13 }}>Karta orqali o'tkazma</span>
             </div>
             <div style={{ width: '100%', background: payment === 'card' ? 'rgba(26,92,58,0.08)' : 'var(--cream)', borderRadius: 10, padding: '10px 12px' }}>
@@ -428,60 +371,47 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
                     e.stopPropagation();
                     navigator.clipboard.writeText('9860340103662565');
                     const el = e.currentTarget;
-                    el.innerHTML = '✓';
-                    setTimeout(() => el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>', 1500);
+                    el.textContent = '✓';
+                    setTimeout(() => el.textContent = '', 1500);
                   }}
-                  style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: 8, padding: '4px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0, width: 36, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: 8, width: 36, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: 13, fontWeight: 700 }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  <Ms icon="content_copy" size={16} fill={1} color="white" />
                 </button>
               </div>
               <div style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>Yusupov Kozim</div>
             </div>
           </div>
 
-          {/* To'lov tugmasi */}
           <button
             onClick={() => {
               if (payment === 'click') window.open(`https://indoor.click.uz/pay?id=071752&t=${total}`, '_blank');
               else if (payment === 'payme') window.open(`https://transfer.paycom.uz/67ff430e8d2fe4b0d3c10d73?a=${total * 100}`, '_blank');
             }}
-            style={{ width: '100%', marginTop: 10, background: payment === 'card' ? 'var(--border)' : 'var(--green)', color: payment === 'card' ? 'var(--text3)' : 'white', border: 'none', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: payment === 'card' ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: payment === 'card' ? 'none' : 'block' }}
+            style={{ width: '100%', marginTop: 10, background: 'var(--green)', color: 'white', border: 'none', borderRadius: 12, padding: 13, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: payment === 'card' ? 'none' : 'block' }}
           >
-            {payment === 'click' ? '✦ Click orqali to\'lash' : '✦ Payme orqali to\'lash'} — {fmt(total)}
+            {payment === 'click' ? 'Click orqali to\'lash' : 'Payme orqali to\'lash'} — {fmt(total)}
           </button>
         </div>
 
         {/* CHEK YUKLASH */}
         <div className="checkout-card">
           <div className="checkout-title">To'lov chekini yuklang</div>
-          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 12, lineHeight: 1.5 }}>
-            To'lov qilgandan so'ng chek screenshotini yuklang — buyurtmangiz tasdiqlanadi
-          </div>
+          <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 12, lineHeight: 1.5 }}>To'lov qilgandan so'ng chek screenshotini yuklang</div>
           {checkImage ? (
             <div style={{ position: 'relative' }}>
               <img src={checkImage} alt="Chek" style={{ width: '100%', borderRadius: 12, border: '2px solid var(--green)', maxHeight: 240, objectFit: 'cover' }} />
               <div style={{ marginTop: 8, fontSize: 12, color: 'var(--green)', fontWeight: 700, textAlign: 'center' }}>✅ Chek yuklandi</div>
-              <button
-                onClick={() => setCheckImage(null)}
-                style={{ position: 'absolute', top: 8, right: 8, background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, width: 28, height: 28, cursor: 'pointer', fontSize: 14, fontWeight: 700 }}
-              >✕</button>
+              <button onClick={() => setCheckImage(null)} style={{ position: 'absolute', top: 8, right: 8, background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, width: 28, height: 28, cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>✕</button>
             </div>
           ) : (
             <label style={{ display: 'block', cursor: 'pointer' }}>
-              <div style={{ border: '2px dashed var(--border)', borderRadius: 14, padding: '24px 16px', textAlign: 'center', background: 'var(--cream)', transition: 'border-color .2s' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
-                  {checkUploading ? 'Yuklanmoqda...' : 'Chek rasmini yuklash'}
-                </div>
+              <div style={{ border: '2px dashed var(--border)', borderRadius: 14, padding: '24px 16px', textAlign: 'center', background: 'var(--cream)' }}>
+                <Ms icon="photo_camera" size={36} fill={1} color="var(--text3)" style={{ marginBottom: 8, display: 'block' }} />
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{checkUploading ? 'Yuklanmoqda...' : 'Chek rasmini yuklash'}</div>
                 <div style={{ fontSize: 12, color: 'var(--text3)' }}>Galereya yoki kamera</div>
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={e => { if (e.target.files[0]) uploadCheck(e.target.files[0]); }}
-              />
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) uploadCheck(e.target.files[0]); }} />
             </label>
           )}
         </div>
@@ -489,21 +419,14 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         {/* HISOB */}
         <div className="checkout-card">
           <div className="checkout-title">Hisob</div>
-          <div className="price-row">
-            <span>Mahsulotlar ({cart.reduce((s, i) => s + i.qty, 0)} ta)</span>
-            <span className="price-val">{fmt(subtotal)}</span>
-          </div>
-          {deliveryType === 'delivery' && (
-            <div className="price-row"><span>Yetkazib berish</span><span className="price-val">{fmt(deliveryPrice)}</span></div>
-          )}
-          {promoApplied && (
-            <div className="price-row"><span>🎁 {promoApplied.code}</span><span style={{ color: 'var(--red)', fontWeight: 700 }}>-{fmt(discount)}</span></div>
-          )}
+          <div className="price-row"><span>Mahsulotlar ({cart.reduce((s, i) => s + i.qty, 0)} ta)</span><span className="price-val">{fmt(subtotal)}</span></div>
+          {deliveryType === 'delivery' && <div className="price-row"><span>Yetkazib berish</span><span className="price-val">{fmt(deliveryPrice)}</span></div>}
+          {promoApplied && <div className="price-row"><span>🎁 {promoApplied.code}</span><span style={{ color: 'var(--red)', fontWeight: 700 }}>-{fmt(discount)}</span></div>}
           <div className="price-row total"><span>Jami</span><span className="price-val">{fmt(total)}</span></div>
         </div>
 
         {!user && (
-          <div style={{ background: 'var(--green-soft)', borderRadius: 14, padding: '12px 16px', marginBottom: 10, fontSize: 13, color: 'var(--green)', fontWeight: 600, border: '1px solid rgba(26,92,58,0.15)' }}>
+          <div style={{ background: 'var(--green-soft)', borderRadius: 14, padding: '12px 16px', marginBottom: 10, fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>
             ⚠️ Buyurtma berish uchun tizimga kiring
           </div>
         )}
