@@ -12,22 +12,27 @@ const Ms = ({ icon, size = 20, fill = 1, color = 'currentColor' }) => (
   }}>{icon}</span>
 );
 
-// Click brend logotipi
-const ClickLogo = ({ size = 26 }) => (
-  <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
-    <circle cx="24" cy="24" r="24" fill="#0072FF" />
-    <circle cx="24" cy="24" r="17" fill="none" stroke="#fff" strokeWidth="4.5" />
-    <path d="M24 13a11 11 0 100 22" stroke="#fff" strokeWidth="4.5" strokeLinecap="round" fill="none" />
-  </svg>
+// Click brend logotipi (wordmark uslubida)
+const ClickLogo = ({ size = 36 }) => (
+  <div style={{
+    width: size, height: size, borderRadius: size * 0.28, background: 'linear-gradient(135deg,#0072FF,#0057c7)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  }}>
+    <svg width={size * 0.6} height={size * 0.6} viewBox="0 0 24 24" fill="none">
+      <path d="M12 3a9 9 0 100 18 9 9 0 01-6.36-15.36" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" fill="none" />
+      <circle cx="17.2" cy="6.8" r="1.6" fill="#fff" />
+    </svg>
+  </div>
 );
 
-// Payme brend logotipi
-const PaymeLogo = ({ size = 26 }) => (
-  <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
-    <circle cx="24" cy="24" r="24" fill="#00CDBC" />
-    <path d="M14 32V16h7.5c4.4 0 7.5 2.6 7.5 6.8s-3.1 6.9-7.5 6.9H19V32h-5zm5-6.3h2c2 0 3-.9 3-2.9s-1-2.8-3-2.8h-2v5.7z" fill="#fff" />
-    <path d="M31 32V16h5v16h-5z" fill="#fff" />
-  </svg>
+// Payme brend logotipi (wordmark uslubida)
+const PaymeLogo = ({ size = 36 }) => (
+  <div style={{
+    width: size, height: size, borderRadius: size * 0.28, background: 'linear-gradient(135deg,#00CDBC,#00a89a)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  }}>
+    <span style={{ color: '#fff', fontWeight: 900, fontSize: size * 0.48, fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1 }}>P</span>
+  </div>
 );
 
 function getTimeSlots() {
@@ -365,40 +370,68 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         {/* TO'LOV */}
         <div className="checkout-card">
           <div className="checkout-title">To'lov usuli</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
             <div
               className={`pay-opt ${payment === 'click' ? 'active' : ''}`}
               onClick={() => setPayment('click')}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', border: `1.5px solid ${payment === 'click' ? '#0072FF' : 'var(--border)'}`, background: payment === 'click' ? 'rgba(0,114,255,0.06)' : 'var(--cream)', borderRadius: 14, cursor: 'pointer', transition: 'all .15s' }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '16px 10px', border: `2px solid ${payment === 'click' ? '#0072FF' : 'var(--border)'}`,
+                background: payment === 'click' ? 'rgba(0,114,255,0.05)' : 'var(--bg)', borderRadius: 16, cursor: 'pointer',
+                transition: 'all .15s', position: 'relative',
+                boxShadow: payment === 'click' ? '0 4px 14px rgba(0,114,255,0.18)' : 'none',
+              }}
             >
-              <div style={{ width: 36, height: 36, borderRadius: 10, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: payment === 'click' ? '0 2px 8px rgba(0,114,255,0.25)' : 'none' }}>
-                <ClickLogo size={36} />
-              </div>
+              {payment === 'click' && (
+                <div style={{ position: 'absolute', top: 8, right: 8, width: 18, height: 18, borderRadius: '50%', background: '#0072FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ms icon="check" size={12} fill={1} color="white" />
+                </div>
+              )}
+              <ClickLogo size={40} />
               <span className="pay-label" style={{ fontWeight: 800, fontSize: 14, color: payment === 'click' ? '#0072FF' : 'var(--text)' }}>Click</span>
-              {payment === 'click' && <Ms icon="check_circle" size={18} fill={1} color="#0072FF" style={{ marginLeft: 'auto' }} />}
             </div>
             <div
               className={`pay-opt ${payment === 'payme' ? 'active' : ''}`}
               onClick={() => setPayment('payme')}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', border: `1.5px solid ${payment === 'payme' ? '#00CDBC' : 'var(--border)'}`, background: payment === 'payme' ? 'rgba(0,205,188,0.08)' : 'var(--cream)', borderRadius: 14, cursor: 'pointer', transition: 'all .15s' }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '16px 10px', border: `2px solid ${payment === 'payme' ? '#00CDBC' : 'var(--border)'}`,
+                background: payment === 'payme' ? 'rgba(0,205,188,0.06)' : 'var(--bg)', borderRadius: 16, cursor: 'pointer',
+                transition: 'all .15s', position: 'relative',
+                boxShadow: payment === 'payme' ? '0 4px 14px rgba(0,205,188,0.2)' : 'none',
+              }}
             >
-              <div style={{ width: 36, height: 36, borderRadius: 10, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: payment === 'payme' ? '0 2px 8px rgba(0,205,188,0.25)' : 'none' }}>
-                <PaymeLogo size={36} />
-              </div>
+              {payment === 'payme' && (
+                <div style={{ position: 'absolute', top: 8, right: 8, width: 18, height: 18, borderRadius: '50%', background: '#00CDBC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ms icon="check" size={12} fill={1} color="white" />
+                </div>
+              )}
+              <PaymeLogo size={40} />
               <span className="pay-label" style={{ fontWeight: 800, fontSize: 14, color: payment === 'payme' ? '#009e91' : 'var(--text)' }}>Payme</span>
-              {payment === 'payme' && <Ms icon="check_circle" size={18} fill={1} color="#00CDBC" style={{ marginLeft: 'auto' }} />}
             </div>
           </div>
 
-          <div className={`pay-opt ${payment === 'card' ? 'active' : ''}`} onClick={() => setPayment('card')} style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '12px 14px', gap: 8 }}>
+          <div
+            className={`pay-opt ${payment === 'card' ? 'active' : ''}`}
+            onClick={() => setPayment('card')}
+            style={{
+              flexDirection: 'column', alignItems: 'flex-start', padding: '14px', gap: 10,
+              border: `2px solid ${payment === 'card' ? 'var(--green)' : 'var(--border)'}`, borderRadius: 16,
+              background: payment === 'card' ? 'rgba(0,98,65,0.04)' : 'var(--bg)', cursor: 'pointer', transition: 'all .15s',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: payment === 'card' ? 'var(--green)' : 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Ms icon="credit_card" size={20} fill={1} color={payment === 'card' ? 'white' : 'var(--text2)'} />
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: payment === 'card' ? 'var(--green)' : 'var(--bg2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Ms icon="credit_card" size={22} fill={1} color={payment === 'card' ? 'white' : 'var(--text2)'} />
               </div>
               <span className="pay-label" style={{ fontSize: 14, fontWeight: 700 }}>Karta orqali o'tkazma</span>
-              {payment === 'card' && <Ms icon="check_circle" size={18} fill={1} color="var(--green)" style={{ marginLeft: 'auto' }} />}
+              {payment === 'card' && (
+                <div style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Ms icon="check" size={12} fill={1} color="white" />
+                </div>
+              )}
             </div>
-            <div style={{ width: '100%', background: payment === 'card' ? 'rgba(26,92,58,0.08)' : 'var(--cream)', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ width: '100%', background: payment === 'card' ? 'rgba(0,98,65,0.07)' : 'var(--bg2)', borderRadius: 12, padding: '12px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span style={{ fontSize: 15, fontWeight: 800, letterSpacing: '1px', color: 'var(--text)' }}>9860 3401 0366 2565</span>
                 <button
