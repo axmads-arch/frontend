@@ -32,22 +32,6 @@ const PaymeLogo = ({ size = 36 }) => (
 );
 
 // Ishonchli SVG ikonkalar (shriftga bog'liq emas)
-const IconTruck = ({ size = 24, color = '#fff' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M2 7h11v9H2z" fill={color} />
-    <path d="M13 10h4.5l3 3.5V16H13z" fill={color} />
-    <circle cx="6" cy="18" r="1.8" fill="none" stroke={color} strokeWidth="1.8" />
-    <circle cx="16.5" cy="18" r="1.8" fill="none" stroke={color} strokeWidth="1.8" />
-  </svg>
-);
-const IconStore = ({ size = 24, color = '#fff' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M3 9l1.5-5h15L21 9" stroke={color} strokeWidth="1.8" strokeLinejoin="round" fill="none" />
-    <path d="M3 9a3 3 0 006 0 3 3 0 006 0 3 3 0 006 0" stroke={color} strokeWidth="1.8" fill="none" />
-    <path d="M4 9v10h16V9" stroke={color} strokeWidth="1.8" fill="none" />
-    <path d="M9.5 19v-5h5v5" stroke={color} strokeWidth="1.8" fill="none" />
-  </svg>
-);
 const IconBolt = ({ size = 24, color = '#fff' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill={color} />
@@ -168,7 +152,7 @@ function MapPicker({ onConfirm, selectedPos }) {
 }
 
 export default function Cart({ products, cart, settings, user, onAdd, onRemove, onClearCart, onBack, onOrderSuccess, onAuthRequired, showToast, fmt }) {
-  const [deliveryType, setDeliveryType] = useState('delivery');
+  const [deliveryType, setDeliveryType] = useState(() => localStorage.getItem('rc_delivery_type') || 'delivery');
   const [address, setAddress] = useState('');
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
@@ -282,6 +266,19 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         <button onClick={onClearCart} style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Tozalash</button>
       </div>
 
+      {/* TANLANGAN BUYURTMA USULI — qayta so'ralmaydi, faqat ko'rsatiladi */}
+      <div style={{ margin: '0 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--green-soft)', borderRadius: 14, padding: '10px 14px' }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--green)' }}>
+          {deliveryType === 'delivery' ? `Yetkazib berish — ${fmt(settings?.deliveryPrice || 10000)}` : 'Olib ketish — Bepul'}
+        </div>
+        <button
+          onClick={() => { const nt = deliveryType === 'delivery' ? 'pickup' : 'delivery'; setDeliveryType(nt); localStorage.setItem('rc_delivery_type', nt); }}
+          style={{ background: 'none', border: 'none', color: 'var(--green)', fontSize: 12, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+        >
+          O'zgartirish
+        </button>
+      </div>
+
       {/* MAHSULOTLAR */}
       <div className="cart-items">
         {cartItems.map(item => (
@@ -302,29 +299,6 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
       </div>
 
       <div className="checkout-section">
-
-        {/* YETKAZISH TURI */}
-        <div className="checkout-card">
-          <div className="checkout-title">Yetkazish turi</div>
-          <div className="delivery-toggle">
-            <div className={`delivery-opt ${deliveryType === 'delivery' ? 'active' : ''}`} onClick={() => setDeliveryType('delivery')}
-              style={{ border: `2px solid ${deliveryType === 'delivery' ? 'var(--green)' : 'var(--border)'}`, background: deliveryType === 'delivery' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
-              <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: deliveryType === 'delivery' ? 'var(--green)' : 'var(--bg2)', boxShadow: deliveryType === 'delivery' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
-                <IconTruck size={24} color={deliveryType === 'delivery' ? '#fff' : 'var(--text2)'} />
-              </div>
-              <div className="delivery-opt-label">Yetkazib berish</div>
-              <div className="delivery-opt-sub">{fmt(settings?.deliveryPrice || 10000)}</div>
-            </div>
-            <div className={`delivery-opt ${deliveryType === 'pickup' ? 'active' : ''}`} onClick={() => setDeliveryType('pickup')}
-              style={{ border: `2px solid ${deliveryType === 'pickup' ? 'var(--green)' : 'var(--border)'}`, background: deliveryType === 'pickup' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
-              <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: deliveryType === 'pickup' ? 'var(--green)' : 'var(--bg2)', boxShadow: deliveryType === 'pickup' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
-                <IconStore size={24} color={deliveryType === 'pickup' ? '#fff' : 'var(--text2)'} />
-              </div>
-              <div className="delivery-opt-label">Olib ketish</div>
-              <div className="delivery-opt-sub">Bepul</div>
-            </div>
-          </div>
-        </div>
 
         {/* MANZIL + XARITA */}
         {deliveryType === 'delivery' && (
