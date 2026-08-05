@@ -31,6 +31,35 @@ const PaymeLogo = ({ size = 36 }) => (
   </div>
 );
 
+// Ishonchli SVG ikonkalar (shriftga bog'liq emas)
+const IconTruck = ({ size = 24, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M2 7h11v9H2z" fill={color} />
+    <path d="M13 10h4.5l3 3.5V16H13z" fill={color} />
+    <circle cx="6" cy="18" r="1.8" fill="none" stroke={color} strokeWidth="1.8" />
+    <circle cx="16.5" cy="18" r="1.8" fill="none" stroke={color} strokeWidth="1.8" />
+  </svg>
+);
+const IconStore = ({ size = 24, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M3 9l1.5-5h15L21 9" stroke={color} strokeWidth="1.8" strokeLinejoin="round" fill="none" />
+    <path d="M3 9a3 3 0 006 0 3 3 0 006 0 3 3 0 006 0" stroke={color} strokeWidth="1.8" fill="none" />
+    <path d="M4 9v10h16V9" stroke={color} strokeWidth="1.8" fill="none" />
+    <path d="M9.5 19v-5h5v5" stroke={color} strokeWidth="1.8" fill="none" />
+  </svg>
+);
+const IconBolt = ({ size = 24, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill={color} />
+  </svg>
+);
+const IconClock = ({ size = 24, color = '#fff' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.8" fill="none" />
+    <path d="M12 7v5l3.5 2" stroke={color} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+  </svg>
+);
+
 function getTimeSlots() {
   const slots = [];
   const now = new Date();
@@ -281,7 +310,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
             <div className={`delivery-opt ${deliveryType === 'delivery' ? 'active' : ''}`} onClick={() => setDeliveryType('delivery')}
               style={{ border: `2px solid ${deliveryType === 'delivery' ? 'var(--green)' : 'var(--border)'}`, background: deliveryType === 'delivery' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
               <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: deliveryType === 'delivery' ? 'var(--green)' : 'var(--bg2)', boxShadow: deliveryType === 'delivery' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
-                <Ms icon="local_shipping" size={24} fill={1} color={deliveryType === 'delivery' ? '#fff' : 'var(--text2)'} />
+                <IconTruck size={24} color={deliveryType === 'delivery' ? '#fff' : 'var(--text2)'} />
               </div>
               <div className="delivery-opt-label">Yetkazib berish</div>
               <div className="delivery-opt-sub">{fmt(settings?.deliveryPrice || 10000)}</div>
@@ -289,7 +318,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
             <div className={`delivery-opt ${deliveryType === 'pickup' ? 'active' : ''}`} onClick={() => setDeliveryType('pickup')}
               style={{ border: `2px solid ${deliveryType === 'pickup' ? 'var(--green)' : 'var(--border)'}`, background: deliveryType === 'pickup' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
               <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: deliveryType === 'pickup' ? 'var(--green)' : 'var(--bg2)', boxShadow: deliveryType === 'pickup' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
-                <Ms icon="storefront" size={24} fill={1} color={deliveryType === 'pickup' ? '#fff' : 'var(--text2)'} />
+                <IconStore size={24} color={deliveryType === 'pickup' ? '#fff' : 'var(--text2)'} />
               </div>
               <div className="delivery-opt-label">Olib ketish</div>
               <div className="delivery-opt-sub">Bepul</div>
@@ -320,7 +349,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
             <div className={`delivery-opt ${scheduleType === 'now' ? 'active' : ''}`} onClick={() => { setScheduleType('now'); setSelectedSlot(null); }}
               style={{ border: `2px solid ${scheduleType === 'now' ? 'var(--green)' : 'var(--border)'}`, background: scheduleType === 'now' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
               <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: scheduleType === 'now' ? 'var(--green)' : 'var(--bg2)', boxShadow: scheduleType === 'now' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
-                <Ms icon="bolt" size={24} fill={1} color={scheduleType === 'now' ? '#fff' : 'var(--text2)'} />
+                <IconBolt size={24} color={scheduleType === 'now' ? '#fff' : 'var(--text2)'} />
               </div>
               <div className="delivery-opt-label">Iloji boricha tez</div>
               <div className="delivery-opt-sub">~40-60 daqiqa</div>
@@ -328,7 +357,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
             <div className={`delivery-opt ${scheduleType === 'scheduled' ? 'active' : ''}`} onClick={() => setScheduleType('scheduled')}
               style={{ border: `2px solid ${scheduleType === 'scheduled' ? 'var(--green)' : 'var(--border)'}`, background: scheduleType === 'scheduled' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
               <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: scheduleType === 'scheduled' ? 'var(--green)' : 'var(--bg2)', boxShadow: scheduleType === 'scheduled' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
-                <Ms icon="schedule" size={24} fill={1} color={scheduleType === 'scheduled' ? '#fff' : 'var(--text2)'} />
+                <IconClock size={24} color={scheduleType === 'scheduled' ? '#fff' : 'var(--text2)'} />
               </div>
               <div className="delivery-opt-label">Vaqt belgilash</div>
               <div className="delivery-opt-sub">Kerakli vaqtga</div>
