@@ -278,13 +278,19 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         <div className="checkout-card">
           <div className="checkout-title">Yetkazish turi</div>
           <div className="delivery-toggle">
-            <div className={`delivery-opt ${deliveryType === 'delivery' ? 'active' : ''}`} onClick={() => setDeliveryType('delivery')}>
-              <div className="delivery-opt-icon"><Ms icon="local_shipping" size={24} fill={1} color={deliveryType === 'delivery' ? 'var(--green)' : 'var(--text2)'} /></div>
+            <div className={`delivery-opt ${deliveryType === 'delivery' ? 'active' : ''}`} onClick={() => setDeliveryType('delivery')}
+              style={{ border: `2px solid ${deliveryType === 'delivery' ? 'var(--green)' : 'var(--border)'}`, background: deliveryType === 'delivery' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: deliveryType === 'delivery' ? 'var(--green)' : 'var(--bg2)', boxShadow: deliveryType === 'delivery' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
+                <Ms icon="local_shipping" size={24} fill={1} color={deliveryType === 'delivery' ? '#fff' : 'var(--text2)'} />
+              </div>
               <div className="delivery-opt-label">Yetkazib berish</div>
               <div className="delivery-opt-sub">{fmt(settings?.deliveryPrice || 10000)}</div>
             </div>
-            <div className={`delivery-opt ${deliveryType === 'pickup' ? 'active' : ''}`} onClick={() => setDeliveryType('pickup')}>
-              <div className="delivery-opt-icon"><Ms icon="storefront" size={24} fill={1} color={deliveryType === 'pickup' ? 'var(--green)' : 'var(--text2)'} /></div>
+            <div className={`delivery-opt ${deliveryType === 'pickup' ? 'active' : ''}`} onClick={() => setDeliveryType('pickup')}
+              style={{ border: `2px solid ${deliveryType === 'pickup' ? 'var(--green)' : 'var(--border)'}`, background: deliveryType === 'pickup' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: deliveryType === 'pickup' ? 'var(--green)' : 'var(--bg2)', boxShadow: deliveryType === 'pickup' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
+                <Ms icon="storefront" size={24} fill={1} color={deliveryType === 'pickup' ? '#fff' : 'var(--text2)'} />
+              </div>
               <div className="delivery-opt-label">Olib ketish</div>
               <div className="delivery-opt-sub">Bepul</div>
             </div>
@@ -311,13 +317,19 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
         <div className="checkout-card">
           <div className="checkout-title">Yetkazish vaqti</div>
           <div className="delivery-toggle">
-            <div className={`delivery-opt ${scheduleType === 'now' ? 'active' : ''}`} onClick={() => { setScheduleType('now'); setSelectedSlot(null); }}>
-              <div className="delivery-opt-icon"><Ms icon="bolt" size={24} fill={1} color={scheduleType === 'now' ? 'var(--green)' : 'var(--text2)'} /></div>
+            <div className={`delivery-opt ${scheduleType === 'now' ? 'active' : ''}`} onClick={() => { setScheduleType('now'); setSelectedSlot(null); }}
+              style={{ border: `2px solid ${scheduleType === 'now' ? 'var(--green)' : 'var(--border)'}`, background: scheduleType === 'now' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: scheduleType === 'now' ? 'var(--green)' : 'var(--bg2)', boxShadow: scheduleType === 'now' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
+                <Ms icon="bolt" size={24} fill={1} color={scheduleType === 'now' ? '#fff' : 'var(--text2)'} />
+              </div>
               <div className="delivery-opt-label">Iloji boricha tez</div>
               <div className="delivery-opt-sub">~40-60 daqiqa</div>
             </div>
-            <div className={`delivery-opt ${scheduleType === 'scheduled' ? 'active' : ''}`} onClick={() => setScheduleType('scheduled')}>
-              <div className="delivery-opt-icon"><Ms icon="schedule" size={24} fill={1} color={scheduleType === 'scheduled' ? 'var(--green)' : 'var(--text2)'} /></div>
+            <div className={`delivery-opt ${scheduleType === 'scheduled' ? 'active' : ''}`} onClick={() => setScheduleType('scheduled')}
+              style={{ border: `2px solid ${scheduleType === 'scheduled' ? 'var(--green)' : 'var(--border)'}`, background: scheduleType === 'scheduled' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: scheduleType === 'scheduled' ? 'var(--green)' : 'var(--bg2)', boxShadow: scheduleType === 'scheduled' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
+                <Ms icon="schedule" size={24} fill={1} color={scheduleType === 'scheduled' ? '#fff' : 'var(--text2)'} />
+              </div>
               <div className="delivery-opt-label">Vaqt belgilash</div>
               <div className="delivery-opt-sub">Kerakli vaqtga</div>
             </div>
