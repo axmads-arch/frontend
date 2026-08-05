@@ -52,24 +52,12 @@ const IconMinus = ({ size = 18, color = 'currentColor' }) => (
     <path d="M5 12h14" stroke={color} strokeWidth="2.4" strokeLinecap="round" />
   </svg>
 );
-const IconTruck = ({ size = 22, color = '#fff' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M2 7h11v9H2z" fill={color} />
-    <path d="M13 10h4.5l3 3.5V16H13z" fill={color} />
-    <circle cx="6" cy="18" r="1.8" fill="none" stroke={color} strokeWidth="1.8" />
-    <circle cx="16.5" cy="18" r="1.8" fill="none" stroke={color} strokeWidth="1.8" />
-  </svg>
-);
-const IconBag = ({ size = 22, color = '#fff' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M6 8h12l1 12H5L6 8z" stroke={color} strokeWidth="1.8" strokeLinejoin="round" fill="none" />
-    <path d="M9 8V6a3 3 0 016 0v2" stroke={color} strokeWidth="1.8" fill="none" />
-  </svg>
-);
+
 
 export default function Home({ products, categories, banners, settings, loading, cart, onAdd, onRemove, onSearchOpen, onProductClick, onChatOpen, fmt, favorites, onToggleFavorite, darkMode, onToggleDark }) {
   const [activeCat, setActiveCat] = useState('Barchasi');
   const [bannerIdx, setBannerIdx] = useState(0);
+  const [deliveryChoice, setDeliveryChoice] = useState(() => localStorage.getItem('rc_delivery_type') || 'delivery');
   const timerRef = useRef(null);
 
   const allCats = ['Barchasi', ...categories];
@@ -174,23 +162,33 @@ export default function Home({ products, categories, banners, settings, loading,
         )}
       </div>
 
-      {/* BUYURTMA USULINI TANLANG — Safia uslubidagi 2x2 tezkor kartochkalar */}
+      {/* BUYURTMA USULINI TANLANG — ixcham, professional kartochkalar */}
       <div className="section" style={{ paddingTop: 20 }}>
         <div className="section-title" style={{ fontSize: 18, marginBottom: 11 }}>Buyurtma usulini tanlang</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div style={{ background: 'linear-gradient(150deg,var(--green) 0%,var(--green2) 100%)', borderRadius: 20, padding: '18px 16px', boxShadow: '0 8px 20px rgba(0,98,65,0.22)' }}>
-            <div style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 26 }}>
-              <IconTruck size={20} color="#fff" />
-            </div>
-            <div style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '-0.3px' }}>Yetkazib berish</div>
-            <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 600, marginTop: 2 }}>{fmt(settings?.deliveryPrice || 10000)}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxWidth: 320 }}>
+          <div
+            onClick={() => { localStorage.setItem('rc_delivery_type', 'delivery'); setDeliveryChoice('delivery'); }}
+            style={{
+              background: deliveryChoice === 'delivery' ? 'var(--green)' : 'var(--white)',
+              border: deliveryChoice === 'delivery' ? 'none' : '1.5px solid var(--border)',
+              borderRadius: 14, padding: '12px 14px', cursor: 'pointer', transition: 'all .15s',
+              boxShadow: deliveryChoice === 'delivery' ? '0 4px 12px rgba(0,98,65,0.25)' : 'none',
+            }}
+          >
+            <div style={{ color: deliveryChoice === 'delivery' ? '#fff' : 'var(--text)', fontWeight: 800, fontSize: 13 }}>Yetkazib berish</div>
+            <div style={{ color: deliveryChoice === 'delivery' ? 'rgba(255,255,255,0.75)' : 'var(--text3)', fontSize: 11, fontWeight: 600, marginTop: 1 }}>{fmt(settings?.deliveryPrice || 10000)}</div>
           </div>
-          <div style={{ background: 'var(--white)', border: '1.5px solid var(--border)', borderRadius: 20, padding: '18px 16px', boxShadow: 'var(--shadow)' }}>
-            <div style={{ width: 38, height: 38, borderRadius: 12, background: 'var(--green-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 26 }}>
-              <IconBag size={19} color="var(--green)" />
-            </div>
-            <div style={{ color: 'var(--text)', fontWeight: 900, fontSize: 15, letterSpacing: '-0.3px' }}>Olib ketish</div>
-            <div style={{ color: 'var(--text3)', fontSize: 12, fontWeight: 600, marginTop: 2 }}>Bepul</div>
+          <div
+            onClick={() => { localStorage.setItem('rc_delivery_type', 'pickup'); setDeliveryChoice('pickup'); }}
+            style={{
+              background: deliveryChoice === 'pickup' ? 'var(--green)' : 'var(--white)',
+              border: deliveryChoice === 'pickup' ? 'none' : '1.5px solid var(--border)',
+              borderRadius: 14, padding: '12px 14px', cursor: 'pointer', transition: 'all .15s',
+              boxShadow: deliveryChoice === 'pickup' ? '0 4px 12px rgba(0,98,65,0.25)' : 'none',
+            }}
+          >
+            <div style={{ color: deliveryChoice === 'pickup' ? '#fff' : 'var(--text)', fontWeight: 800, fontSize: 13 }}>Olib ketish</div>
+            <div style={{ color: deliveryChoice === 'pickup' ? 'rgba(255,255,255,0.75)' : 'var(--text3)', fontSize: 11, fontWeight: 600, marginTop: 1 }}>Bepul</div>
           </div>
         </div>
       </div>
