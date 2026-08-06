@@ -76,7 +76,7 @@ export default function Home({ products, categories, banners, settings, loading,
     return (
       <div className="product-card" onClick={() => onProductClick(p)}>
         <div className="product-img-wrap">
-          {p.image ? <img className="product-img" src={p.image} alt={p.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} /> : null}
+          {p.image ? <img className="product-img" src={p.image} alt={p.name} loading="lazy" decoding="async" onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} /> : null}
           <div className="product-img-placeholder" style={{ display: p.image ? 'none' : 'flex' }}>🍰</div>
           <button className="fav-btn" onClick={e => { e.stopPropagation(); onToggleFavorite(p.id); }}>
             <IconHeart size={18} filled={isFav(p.id)} color={isFav(p.id) ? '#e5484d' : 'rgba(0,0,0,0.45)'} />
@@ -114,7 +114,7 @@ export default function Home({ products, categories, banners, settings, loading,
   return (
     <div className="page">
       <header className="header">
-        <img className="header-logo" src={LOGO_URL} alt="Logo" onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+        <img className="header-logo" src={LOGO_URL} alt="Logo" decoding="async" fetchPriority="high" onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
         <div className="header-logo-placeholder" style={{ display: 'none' }}>R</div>
         <div className="header-info">
           <div className="header-name">Rahmat Chef</div>
@@ -144,7 +144,7 @@ export default function Home({ products, categories, banners, settings, loading,
         <div className="banner-carousel">
           <div className="banner-slides" style={{ transform: `translateX(-${bannerIdx * 100}%)` }}>
             {banners.length > 0 ? banners.map((b, i) => (
-              <div key={i} className="banner-slide"><img src={b.image} alt={b.title || 'Banner'} /></div>
+              <div key={i} className="banner-slide"><img src={b.image} alt={b.title || 'Banner'} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" /></div>
             )) : (
               <div className="banner-slide">
                 <div className="banner-default">
