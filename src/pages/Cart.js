@@ -32,9 +32,11 @@ const PaymeLogo = ({ size = 36 }) => (
 );
 
 // Ishonchli SVG ikonkalar (shriftga bog'liq emas)
-const IconBolt = ({ size = 24, color = '#fff' }) => (
+const IconRocket = ({ size = 24, color = '#fff' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill={color} />
+    <path d="M12 2c3 1.5 5 4.8 5 9 0 2-.6 3.8-1.6 5.2L12 13.5l-3.4 2.7C7.6 14.8 7 13 7 11c0-4.2 2-7.5 5-9z" fill={color} />
+    <circle cx="12" cy="9.5" r="1.6" fill="var(--green)" />
+    <path d="M8.5 15l-2 4 3.3-1.7M15.5 15l2 4-3.3-1.7" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
   </svg>
 );
 const IconClock = ({ size = 24, color = '#fff' }) => (
@@ -283,7 +285,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
       <div className="cart-items">
         {cartItems.map(item => (
           <div key={item.id} className="cart-item">
-            {item.product.image ? <img className="cart-item-img" src={item.product.image} alt={item.product.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} /> : null}
+            {item.product.image ? <img className="cart-item-img" src={item.product.image} alt={item.product.name} loading="lazy" decoding="async" onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} /> : null}
             <div className="cart-item-img-placeholder" style={{ display: item.product.image ? 'none' : 'flex' }}>{CATS_ICONS[item.product.category] || '🍰'}</div>
             <div className="cart-item-info">
               <div className="cart-item-name">{item.product.name}</div>
@@ -323,7 +325,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
             <div className={`delivery-opt ${scheduleType === 'now' ? 'active' : ''}`} onClick={() => { setScheduleType('now'); setSelectedSlot(null); }}
               style={{ border: `2px solid ${scheduleType === 'now' ? 'var(--green)' : 'var(--border)'}`, background: scheduleType === 'now' ? 'rgba(0,98,65,0.05)' : 'var(--bg)', borderRadius: 16, transition: 'all .15s' }}>
               <div style={{ width: 44, height: 44, borderRadius: 13, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: scheduleType === 'now' ? 'var(--green)' : 'var(--bg2)', boxShadow: scheduleType === 'now' ? '0 4px 10px rgba(0,98,65,0.25)' : 'none' }}>
-                <IconBolt size={24} color={scheduleType === 'now' ? '#fff' : 'var(--text2)'} />
+                <IconRocket size={22} color={scheduleType === 'now' ? '#fff' : 'var(--text2)'} />
               </div>
               <div className="delivery-opt-label">Iloji boricha tez</div>
               <div className="delivery-opt-sub">~40-60 daqiqa</div>
@@ -386,7 +388,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
               className={`pay-opt ${payment === 'payme' ? 'active' : ''}`}
               onClick={() => setPayment('payme')}
               style={{
-                display: 'flex', alignItems: 'center', gap: 10, padding: '16px 14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 68,
                 border: `2px solid ${payment === 'payme' ? 'var(--text)' : 'var(--border)'}`,
                 background: 'var(--bg2)', borderRadius: 14, cursor: 'pointer', transition: 'all .15s',
               }}
@@ -397,7 +399,7 @@ export default function Cart({ products, cart, settings, user, onAdd, onRemove, 
               className={`pay-opt ${payment === 'click' ? 'active' : ''}`}
               onClick={() => setPayment('click')}
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '16px 14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 68,
                 border: `2px solid ${payment === 'click' ? 'var(--text)' : 'var(--border)'}`,
                 background: 'var(--bg2)', borderRadius: 14, cursor: 'pointer', transition: 'all .15s',
               }}
