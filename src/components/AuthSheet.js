@@ -53,6 +53,8 @@ export default function AuthSheet({ onClose, onSuccess }) {
           <input
             style={inpStyle}
             type="text"
+            inputMode="text"
+            autoComplete="given-name"
             placeholder="Ismingiz"
             value={name}
             onChange={e => setName(e.target.value)}
@@ -72,6 +74,8 @@ export default function AuthSheet({ onClose, onSuccess }) {
             <input
               className="phone-input"
               type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
               placeholder="90 123 45 67"
               value={phone}
               onChange={e => setPhone(e.target.value)}
