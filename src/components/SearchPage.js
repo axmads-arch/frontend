@@ -46,7 +46,7 @@ export default function SearchPage({ products, cart, onAdd, onRemove, onClose, f
               <div key={p.id} className="product-card" onClick={() => onProductClick && onProductClick(p)}>
                 <div className="product-img-wrap">
                   {p.image ? (
-                    <img className="product-img" src={p.image} alt={p.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                    <img className="product-img" src={p.image} alt={p.name} loading="lazy" decoding="async" onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
                   ) : null}
                   <div className="product-img-placeholder" style={{ display: p.image ? 'none' : 'flex' }}>
                     {CATS_ICONS[p.category] || '🍰'}
