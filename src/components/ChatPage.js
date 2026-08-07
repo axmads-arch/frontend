@@ -20,8 +20,27 @@ export default function ChatPage({ user, onClose, onAuthRequired }) {
   useEffect(() => {
     if (!user) { setLoading(false); return; }
     loadMessages();
-    const interval = setInterval(loadMessages, 5000);
-    return () => clearInterval(interval);
+
+    // Faqat sahifa ko'rinib turganda so'rov yuboriladi — fon rejimida batareya/trafik tejaladi
+    let interval = null;
+    const startPolling = () => {
+      if (interval) return;
+      interval = setInterval(loadMessages, 5000);
+    };
+    const stopPolling = () => {
+      if (interval) { clearInterval(interval); interval = null; }
+    };
+    const handleVisibility = () => {
+      if (document.hidden) stopPolling();
+      else { loadMessages(); startPolling(); }
+    };
+
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [user, loadMessages]);
 
   useEffect(() => {
