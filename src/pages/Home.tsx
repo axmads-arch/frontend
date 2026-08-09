@@ -4,10 +4,6 @@ import { LOGO_URL } from '../data/api';
 import { Ms, IconChat, IconMoon, IconSun, IconSearch, IconHeart, IconPlus, IconMinus } from '../components/icons';
 import type { Product, CartItem, Banner, Settings } from '../types';
 
-const CATS_ICONS: Record<string, string> = {
-  Cheesecake: '🍰', Medovik: '🍯', Tort: '🎂', Kofe: '☕', Choy: '🍵', Ichimlik: '🥤',
-};
-
 interface HomeProps {
   products: Product[];
   categories: string[];
