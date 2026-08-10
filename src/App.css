@@ -298,3 +298,76 @@ button, .product-card, .cart-item, .pay-opt, .delivery-opt, .cat-btn {
 button:active, .product-card:active {
   transition-duration: .08s;
 }
+
+/* ==================================================================
+   KATTA VIZUAL YANGILANISH: parallax hero, featured scroll, animatsiyalar
+   ================================================================== */
+
+/* PARALLAX HERO */
+.hero-parallax{
+  position:relative; height:280px; overflow:hidden; border-radius:0 0 32px 32px;
+}
+.hero-parallax-img{
+  position:absolute; inset:-20px 0 0 0; width:100%; height:calc(100% + 20px);
+  object-fit:cover; will-change:transform;
+}
+.hero-parallax-overlay{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(14,42,31,0.15) 0%, rgba(14,42,31,0.75) 100%);
+}
+.hero-parallax-content{
+  position:absolute; left:0; right:0; bottom:24px; padding:0 22px; color:#fff;
+}
+.hero-parallax-eyebrow{
+  font-size:11px; letter-spacing:2.5px; text-transform:uppercase; font-weight:700;
+  color:rgba(255,255,255,0.75); margin-bottom:6px;
+}
+.hero-parallax-title{
+  font-size:30px; font-weight:900; letter-spacing:-0.6px; line-height:1.08;
+}
+.hero-parallax-sub{
+  font-size:13.5px; color:rgba(255,255,255,0.85); margin-top:8px; font-weight:500;
+}
+
+/* FEATURED HORIZONTAL SCROLL */
+.featured-wrap{ padding:22px 0 6px; }
+.featured-head{ display:flex; justify-content:space-between; align-items:baseline; padding:0 16px; margin-bottom:14px; }
+.featured-scroll{
+  display:flex; gap:14px; overflow-x:auto; padding:2px 16px 12px;
+  scroll-snap-type:x proximity;
+}
+.featured-card{
+  flex-shrink:0; width:168px; scroll-snap-align:start; cursor:pointer;
+  border-radius:20px; overflow:hidden; background:var(--white); box-shadow:var(--shadow);
+  transition:transform .2s;
+}
+.featured-card:active{ transform:scale(0.96); }
+.featured-card-img-wrap{ position:relative; width:100%; height:168px; overflow:hidden; }
+.featured-card-img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s; }
+.featured-card:active .featured-card-img{ transform:scale(1.08); }
+.featured-card-badge{
+  position:absolute; top:10px; left:10px; background:var(--green); color:#fff;
+  font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px; letter-spacing:0.3px;
+}
+.featured-card-body{ padding:12px; }
+.featured-card-name{ font-size:13px; font-weight:800; color:var(--text); line-height:1.3; margin-bottom:6px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.featured-card-price{ font-size:14px; font-weight:900; color:var(--green); }
+
+/* KIRISH ANIMATSIYALARI */
+@keyframes fadeSlideUp{
+  from{ opacity:0; transform:translateY(14px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+.anim-in{
+  animation:fadeSlideUp .5s cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes heroZoom{
+  from{ transform:scale(1.08); opacity:0.85; }
+  to{ transform:scale(1); opacity:1; }
+}
+.hero-parallax-img{ animation:heroZoom .8s ease-out both; }
+
+@media (prefers-reduced-motion: reduce){
+  .anim-in, .hero-parallax-img{ animation:none !important; }
+}
