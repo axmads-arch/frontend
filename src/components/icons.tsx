@@ -76,6 +76,25 @@ export const IconClock: React.FC<IconProps> = ({ size = 24, color = '#fff' }) =>
   </svg>
 );
 
+// Click brend logotipi (rasmiy uslub — doira + ichki nuqta)
+export const ClickLogo: React.FC<{ size?: number }> = ({ size = 36 }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+    <circle cx="20" cy="20" r="19" fill="none" stroke="#1877F2" strokeWidth="3.6" />
+    <circle cx="14" cy="20" r="7" fill="#1877F2" />
+  </svg>
+);
+
+// Payme brend logotipi (rasmiy wordmark uslubi)
+export const PaymeLogo: React.FC<{ size?: number }> = ({ size = 36 }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1, fontFamily: 'Arial, sans-serif' }}>
+    <span style={{ fontSize: size * 0.42, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.5px' }}>Pay</span>
+    <span style={{
+      fontSize: size * 0.34, fontWeight: 800, color: '#fff', background: '#00CDBC',
+      borderRadius: 5, padding: '0px 5px', marginTop: 2, letterSpacing: '-0.3px',
+    }}>me</span>
+  </div>
+);
+
 // Material Symbol komponenti — faqat shrift kerak bo'lgan kam-muhim ikonkalar uchun
 // (masalan "search_off" kabi bo'sh natija holatlari, chunki bu joyda ikonka
 // yuklanmasa ham funksionallikka ta'sir qilmaydi)
