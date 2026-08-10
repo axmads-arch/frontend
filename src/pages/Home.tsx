@@ -30,6 +30,7 @@ export default function Home({
 }: HomeProps) {
   const [activeCat, setActiveCat] = useState('Barchasi');
   const [bannerIdx, setBannerIdx] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
   const [deliveryChoice, setDeliveryChoice] = useState<'delivery' | 'pickup'>(
     () => (localStorage.getItem('rc_delivery_type') as 'delivery' | 'pickup') || 'delivery'
   );
@@ -39,12 +40,20 @@ export default function Home({
   const filtered = activeCat === 'Barchasi' ? products : products.filter(p => p.category === activeCat);
   const getQty = (id: number) => cart.find(c => c.id === id)?.qty ?? 0;
   const isFav = (id: number) => favorites.includes(id);
+  const heroImage = banners[0]?.image;
+  const featured = [...products].filter(p => p.available !== false).slice(0, 8);
 
   useEffect(() => {
     if (banners.length <= 1) return;
     timerRef.current = setInterval(() => setBannerIdx(i => (i + 1) % banners.length), 4000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [banners]);
+
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const selectDeliveryType = (type: 'delivery' | 'pickup') => {
     localStorage.setItem('rc_delivery_type', type);
@@ -132,31 +141,72 @@ export default function Home({
         </div>
       </div>
 
-      <div className="banner-wrap">
-        <div className="banner-carousel">
-          <div className="banner-slides" style={{ transform: `translateX(-${bannerIdx * 100}%)` }}>
-            {banners.length > 0 ? banners.map((b, i) => (
-              <div key={b.id ?? i} className="banner-slide">
-                <img src={b.image} alt={b.title || 'Banner'} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+      {heroImage ? (
+        <div className="hero-parallax">
+          <img
+            className="hero-parallax-img"
+            src={heroImage}
+            alt={banners[0]?.title || 'Rahmat Chef'}
+            style={{ transform: `translateY(${Math.min(scrollY * 0.35, 40)}px)` }}
+            fetchPriority="high"
+          />
+          <div className="hero-parallax-overlay" />
+          <div className="hero-parallax-content">
+            <div className="hero-parallax-eyebrow">Sweet Pastry</div>
+            <div className="hero-parallax-title">{settings.siteName || 'Rahmat Chef'}</div>
+            <div className="hero-parallax-sub">{settings.bannerText || "Har bir shirinlikda mehr va sifat"}</div>
+          </div>
+          {banners.length > 1 && (
+            <div className="banner-dots" style={{ position: 'absolute', bottom: 10, right: 16, margin: 0 }}>
+              {banners.map((_, i) => (
+                <div key={i} className={`banner-dot ${i === bannerIdx ? 'active' : ''}`} style={{ background: i === bannerIdx ? '#fff' : 'rgba(255,255,255,0.4)' }} />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="banner-wrap">
+          <div className="banner-carousel">
+            <div className="banner-slide">
+              <div className="banner-default">
+                <h2>{settings.siteName || 'Rahmat Chef'}</h2>
+                <p>{settings.bannerText || 'Premium shirinliklar'}</p>
               </div>
-            )) : (
-              <div className="banner-slide">
-                <div className="banner-default">
-                  <h2>{settings.siteName || 'Rahmat Chef'}</h2>
-                  <p>{settings.bannerText || 'Premium shirinliklar'}</p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
-        {banners.length > 1 && (
-          <div className="banner-dots">
-            {banners.map((_, i) => (
-              <div key={i} className={`banner-dot ${i === bannerIdx ? 'active' : ''}`} onClick={() => setBannerIdx(i)} />
+      )}
+
+      {featured.length > 0 && (
+        <div className="featured-wrap anim-in">
+          <div className="featured-head">
+            <div className="section-title" style={{ marginBottom: 0 }}>Tavsiya etamiz</div>
+          </div>
+          <div className="featured-scroll">
+            {featured.map((p, i) => (
+              <div
+                key={p.id}
+                className="featured-card anim-in"
+                style={{ animationDelay: `${i * 0.06}s` }}
+                onClick={() => onProductClick(p)}
+              >
+                <div className="featured-card-img-wrap">
+                  {p.image ? (
+                    <img className="featured-card-img" src={p.image} alt={p.name} loading={i < 2 ? 'eager' : 'lazy'} decoding="async" />
+                  ) : (
+                    <div className="product-img-placeholder" style={{ height: '100%' }}>🍰</div>
+                  )}
+                  <div className="featured-card-badge">{p.category}</div>
+                </div>
+                <div className="featured-card-body">
+                  <div className="featured-card-name">{p.name}</div>
+                  <div className="featured-card-price">{fmt(p.price)}</div>
+                </div>
+              </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* BUYURTMA USULINI TANLANG — ixcham, professional kartochkalar */}
       <div className="section" style={{ paddingTop: 20 }}>
@@ -232,7 +282,11 @@ export default function Home({
           </div>
         ) : (
           <div className="product-grid">
-            {filtered.map(p => <ProductCard key={p.id} p={p} />)}
+            {filtered.map((p, i) => (
+              <div key={p.id} className="anim-in" style={{ animationDelay: `${Math.min(i, 12) * 0.04}s` }}>
+                <ProductCard p={p} />
+              </div>
+            ))}
           </div>
         )}
       </div>
