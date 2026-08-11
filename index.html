@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Material Symbols Rounded - alohida -->
+  <!-- Material Symbols Rounded -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
 
   <style>
@@ -42,31 +42,40 @@
       user-select: none;
     }
 
-    #splash {
-      position: fixed; inset: 0;
-      background: #1a5c3a;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 9999; transition: opacity .5s;
+    /* Agar React 6 soniyadan ko'p vaqt ichida yuklanmasa, oq ekran o'rniga shu xabar chiqadi */
+    #boot-error {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: #faf8f4; color: #201e1a;
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 32px;
     }
-    #splash-name { font-size: 24px; font-weight: 800; color: white; letter-spacing: -0.5px; }
-    #splash-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 6px; }
+    #boot-error h2 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    #boot-error p { font-size: 13px; color: #6e6a62; max-width: 300px; line-height: 1.5; margin-bottom: 16px; }
+    #boot-error button {
+      background: #006241; color: #fff; border: none; border-radius: 12px;
+      padding: 12px 24px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div id="splash">
-    <div style="width:72px;height:72px;border-radius:20px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:white;margin-bottom:14px">R</div>
-    <div id="splash-name">Rahmat Chef</div>
-    <div id="splash-sub">Sweet Pastry</div>
-  </div>
   <div id="root"></div>
+
+  <div id="boot-error">
+    <h2>Sahifa yuklanmadi</h2>
+    <p>Internet aloqasini tekshiring va qayta urinib ko'ring. Muammo davom etsa, ilova kesh (cache)ini tozalang.</p>
+    <button onclick="location.reload()">Qayta yuklash</button>
+  </div>
+
   <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const s = document.getElementById('splash');
-        if (s) { s.style.opacity='0'; setTimeout(()=>s.remove(),500); }
-      }, 1200);
-    });
+    // Agar 6 soniyadan keyin #root hali ham bo'sh bo'lsa (React ilova yuklanmagan),
+    // foydalanuvchiga oq ekran o'rniga tushunarli xabar ko'rsatiladi.
+    setTimeout(function () {
+      var root = document.getElementById('root');
+      if (root && root.children.length === 0) {
+        document.getElementById('boot-error').style.display = 'flex';
+      }
+    }, 6000);
   </script>
 </body>
 </html>
