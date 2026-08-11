@@ -1,7 +1,8 @@
 // src/pages/Orders.tsx
 import React, { useState, useEffect } from 'react';
 import { fetchMyOrders } from '../data/api';
-import type { Order, OrderStatus, User } from '../types';
+import type { Order, OrderStatus } from '../types/order';
+import type { User } from '../types';
 
 const STATUS: Record<OrderStatus, { label: string; cls: string }> = {
   new: { label: 'Yangi', cls: 'st-new' },
