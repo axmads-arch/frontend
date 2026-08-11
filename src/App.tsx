@@ -97,7 +97,19 @@ export default function App() {
       )}
 
       {tab === 'orders' && (
-        <Orders user={user} onAuthRequired={overlays.openAuth} fmt={fmt} />
+        <Orders
+          user={user}
+          onAuthRequired={overlays.openAuth}
+          fmt={fmt}
+          onReorder={(order) => {
+            order.items?.forEach(item => {
+              if (item.product) {
+                for (let i = 0; i < item.quantity; i++) addToCart(item.product);
+              }
+            });
+            showToast("Mahsulotlar savatchaga qo'shildi ✓");
+          }}
+        />
       )}
 
       {tab === 'profile' && (
