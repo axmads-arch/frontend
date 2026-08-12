@@ -68,7 +68,6 @@
   </div>
 
   <script>
-    // Haqiqiy JS xatosini ekranga chiqaramiz — shunda devtools kerak bo'lmaydi
     function showBootError(message) {
       var box = document.getElementById('boot-error');
       var msg = document.getElementById('boot-error-msg');
@@ -83,14 +82,39 @@
       if (box) box.style.display = 'flex';
     }
 
+    // MUHIM: uchinchi argument "true" — bu resurs (masalan <script src>) yuklanmay
+    // qolgan hollarni ham tutadi, oddiy xato tinglagich buni ko'rmaydi.
     window.addEventListener('error', function (e) {
-      showBootError((e.error && e.error.stack) || e.message);
-    });
+      var target = e.target;
+      if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+        showBootError('Fayl yuklanmadi: ' + (target.src || target.href));
+      } else {
+        showBootError((e.error && e.error.stack) || e.message);
+      }
+    }, true);
+
     window.addEventListener('unhandledrejection', function (e) {
       showBootError((e.reason && e.reason.stack) || e.reason);
     });
 
-    // Agar 6 soniyadan keyin #root hali ham bo'sh bo'lsa (xato bo'lmasa ham), xabar chiqadi
+    // Sahifadagi barcha <script> teglarini faol tekshiramiz — 404 yoki noto'g'ri
+    // kontent-tur (masalan JS o'rniga HTML qaytsa) bo'lsa, buni aniq ko'rsatamiz.
+    window.addEventListener('load', function () {
+      var scripts = Array.prototype.slice.call(document.scripts).filter(function (s) { return s.src; });
+      scripts.forEach(function (s) {
+        fetch(s.src).then(function (r) {
+          var ct = r.headers.get('content-type') || '';
+          if (!r.ok) {
+            showBootError('JS fayl xato bilan qaytdi (' + r.status + '): ' + s.src);
+          } else if (ct.indexOf('javascript') === -1 && ct.indexOf('ecmascript') === -1) {
+            showBootError('JS fayl noto\'g\'ri turda qaytdi (' + ct + '): ' + s.src + '\n\nBu odatda Vercel marshrutlash sozlamasi (rewrites) barcha so\'rovlarni index.html\'ga yo\'naltirganda yuz beradi.');
+          }
+        }).catch(function (err) {
+          showBootError('JS faylni tekshirishda xatolik: ' + s.src + ' — ' + err);
+        });
+      });
+    });
+
     setTimeout(function () {
       var root = document.getElementById('root');
       if (root && root.children.length === 0) {
