@@ -41,86 +41,9 @@
       font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       user-select: none;
     }
-
-    /* Agar React 6 soniyadan ko'p vaqt ichida yuklanmasa, oq ekran o'rniga shu xabar chiqadi */
-    #boot-error {
-      display: none;
-      position: fixed; inset: 0; z-index: 9999;
-      background: #faf8f4; color: #201e1a;
-      flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; padding: 32px;
-    }
-    #boot-error h2 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-    #boot-error p { font-size: 13px; color: #6e6a62; max-width: 300px; line-height: 1.5; margin-bottom: 16px; }
-    #boot-error button {
-      background: #006241; color: #fff; border: none; border-radius: 12px;
-      padding: 12px 24px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
-    }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
-  <div id="boot-error">
-    <h2>Sahifa yuklanmadi</h2>
-    <p id="boot-error-msg">Internet aloqasini tekshiring va qayta urinib ko'ring. Muammo davom etsa, ilova kesh (cache)ini tozalang.</p>
-    <button onclick="location.reload()">Qayta yuklash</button>
-  </div>
-
-  <script>
-    function showBootError(message) {
-      var box = document.getElementById('boot-error');
-      var msg = document.getElementById('boot-error-msg');
-      if (msg && message) {
-        msg.textContent = String(message);
-        msg.style.fontFamily = 'monospace';
-        msg.style.fontSize = '11px';
-        msg.style.textAlign = 'left';
-        msg.style.wordBreak = 'break-word';
-        msg.style.maxWidth = '340px';
-      }
-      if (box) box.style.display = 'flex';
-    }
-
-    // MUHIM: uchinchi argument "true" — bu resurs (masalan <script src>) yuklanmay
-    // qolgan hollarni ham tutadi, oddiy xato tinglagich buni ko'rmaydi.
-    window.addEventListener('error', function (e) {
-      var target = e.target;
-      if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
-        showBootError('Fayl yuklanmadi: ' + (target.src || target.href));
-      } else {
-        showBootError((e.error && e.error.stack) || e.message);
-      }
-    }, true);
-
-    window.addEventListener('unhandledrejection', function (e) {
-      showBootError((e.reason && e.reason.stack) || e.reason);
-    });
-
-    // Sahifadagi barcha <script> teglarini faol tekshiramiz — 404 yoki noto'g'ri
-    // kontent-tur (masalan JS o'rniga HTML qaytsa) bo'lsa, buni aniq ko'rsatamiz.
-    window.addEventListener('load', function () {
-      var scripts = Array.prototype.slice.call(document.scripts).filter(function (s) { return s.src; });
-      scripts.forEach(function (s) {
-        fetch(s.src).then(function (r) {
-          var ct = r.headers.get('content-type') || '';
-          if (!r.ok) {
-            showBootError('JS fayl xato bilan qaytdi (' + r.status + '): ' + s.src);
-          } else if (ct.indexOf('javascript') === -1 && ct.indexOf('ecmascript') === -1) {
-            showBootError('JS fayl noto\'g\'ri turda qaytdi (' + ct + '): ' + s.src + '\n\nBu odatda Vercel marshrutlash sozlamasi (rewrites) barcha so\'rovlarni index.html\'ga yo\'naltirganda yuz beradi.');
-          }
-        }).catch(function (err) {
-          showBootError('JS faylni tekshirishda xatolik: ' + s.src + ' — ' + err);
-        });
-      });
-    });
-
-    setTimeout(function () {
-      var root = document.getElementById('root');
-      if (root && root.children.length === 0) {
-        showBootError('React ilova #root ichiga hech narsa chizmadi (silent fail). Yuqoridagi xato yo\'q bo\'lsa, bu build muammosi bo\'lishi mumkin.');
-      }
-    }, 6000);
-  </script>
 </body>
 </html>
