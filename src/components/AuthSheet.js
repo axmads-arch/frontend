@@ -1,7 +1,14 @@
+// src/components/AuthSheet.tsx
 import React, { useState } from 'react';
 import { API_URL, saveUser } from '../data/api';
+import type { User } from '../types';
 
-export default function AuthSheet({ onClose, onSuccess }) {
+interface AuthSheetProps {
+  onClose: () => void;
+  onSuccess: (user: User) => void;
+}
+
+export default function AuthSheet({ onClose, onSuccess }: AuthSheetProps) {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,22 +27,24 @@ export default function AuthSheet({ onClose, onSuccess }) {
       });
       const d = await r.json();
       if (d.token) {
-        const user = { phone: '+998' + clean, name: name.trim(), token: d.token };
+        const user: User = { phone: '+998' + clean, name: name.trim(), token: d.token };
         saveUser(user);
         localStorage.setItem('rc_token', d.token);
         onSuccess(user);
       } else {
         setError(d.error || 'Xatolik yuz berdi');
       }
-    } catch { setError('Server bilan bog\'lanishda xatolik'); }
+    } catch {
+      setError("Server bilan bog'lanishda xatolik");
+    }
     setLoading(false);
   };
 
-  const inpStyle = {
+  const inpStyle: React.CSSProperties = {
     width: '100%', padding: '13px 14px',
     border: '1.5px solid var(--border)', borderRadius: 14,
     fontSize: 15, outline: 'none', fontFamily: 'inherit',
-    background: 'var(--cream)', color: 'var(--text)', fontWeight: 500,
+    background: 'var(--bg2)', color: 'var(--text)', fontWeight: 500,
   };
 
   return (
@@ -58,8 +67,8 @@ export default function AuthSheet({ onClose, onSuccess }) {
             placeholder="Ismingiz"
             value={name}
             onChange={e => setName(e.target.value)}
-            onFocus={e => e.target.style.borderColor = 'var(--green)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
+            onFocus={e => { e.target.style.borderColor = 'var(--green)'; }}
+            onBlur={e => { e.target.style.borderColor = 'var(--border)'; }}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
           />
         </div>
