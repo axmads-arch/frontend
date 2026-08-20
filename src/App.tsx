@@ -1,8 +1,7 @@
 // src/App.tsx
-// Diqqat: bu fayl endi faqat "orkestratsiya" qiladi — barcha mantiq hooks/ papkasida.
-// App.tsx'ni ochgan har qanday dasturchi 30 soniyada butun ilova qanday ishlashini tushunadi.
+// Diqqat: bu fayl faqat "orkestratsiya" qiladi — barcha mantiq hooks/ papkasida.
 
-import React from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import './App.css';
 import { getUser, removeUser, fmt } from './data/api';
 
@@ -10,12 +9,16 @@ import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
-import AuthSheet from './components/AuthSheet';
-import SearchPage from './components/SearchPage';
-import ProductDetail from './components/ProductDetail';
-import ChatPage from './components/ChatPage';
 import BottomNav from './components/BottomNav';
 import CartStickyBar from './components/CartStickyBar';
+
+// Kod bo'linishi (code splitting): bu 4 ta komponent faqat kerak bo'lganda
+// (mijoz tugmani bosganda) yuklanadi — boshlang'ich yuklama hajmi kichrayadi,
+// sayt tezroq ochiladi.
+const AuthSheet = lazy(() => import('./components/AuthSheet'));
+const SearchPage = lazy(() => import('./components/SearchPage'));
+const ProductDetail = lazy(() => import('./components/ProductDetail'));
+const ChatPage = lazy(() => import('./components/ChatPage'));
 
 import { useAppData } from './hooks/useAppData';
 import { useCart } from './hooks/useCart';
@@ -23,8 +26,17 @@ import { useFavorites } from './hooks/useFavorites';
 import { useTheme } from './hooks/useTheme';
 import { useToast } from './hooks/useToast';
 import { useOverlays } from './hooks/useOverlays';
-import { useState } from 'react';
 import type { TabKey, User } from './types';
+
+// Lazy komponentlar yuklanayotganda ko'rinadigan yengil "spinner" o'rnini bosuvchi
+function OverlayFallback() {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(20,18,15,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 36, height: 36, border: '3px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin .7s linear infinite' }} />
+      <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
+    </div>
+  );
+}
 
 export default function App() {
   const [tab, setTab] = useState<TabKey>('home');
@@ -138,43 +150,45 @@ export default function App() {
 
       <BottomNav activeTab={tab} cartCount={cartCount} onTabChange={setTab} />
 
-      {overlays.authOpen && (
-        <AuthSheet onClose={overlays.closeAuth} onSuccess={handleLoginSuccess} />
-      )}
+      <Suspense fallback={<OverlayFallback />}>
+        {overlays.authOpen && (
+          <AuthSheet onClose={overlays.closeAuth} onSuccess={handleLoginSuccess} />
+        )}
 
-      {overlays.searchOpen && (
-        <SearchPage
-          products={products}
-          cart={cart}
-          onAdd={addToCart}
-          onRemove={removeFromCart}
-          onClose={overlays.closeSearch}
-          fmt={fmt}
-          onProductClick={(p) => { overlays.closeSearch(); overlays.openProduct(p); }}
-        />
-      )}
+        {overlays.searchOpen && (
+          <SearchPage
+            products={products}
+            cart={cart}
+            onAdd={addToCart}
+            onRemove={removeFromCart}
+            onClose={overlays.closeSearch}
+            fmt={fmt}
+            onProductClick={(p) => { overlays.closeSearch(); overlays.openProduct(p); }}
+          />
+        )}
 
-      {overlays.chatOpen && (
-        <ChatPage
-          user={user}
-          onClose={overlays.closeChat}
-          onAuthRequired={() => { overlays.closeChat(); overlays.openAuth(); }}
-        />
-      )}
+        {overlays.chatOpen && (
+          <ChatPage
+            user={user}
+            onClose={overlays.closeChat}
+            onAuthRequired={() => { overlays.closeChat(); overlays.openAuth(); }}
+          />
+        )}
 
-      {overlays.selectedProduct && (
-        <ProductDetail
-          product={overlays.selectedProduct}
-          cart={cart}
-          onAdd={addToCart}
-          onRemove={removeFromCart}
-          onClose={overlays.closeProduct}
-          isFav={isFavorite(overlays.selectedProduct.id)}
-          onToggleFav={() => handleToggleFavorite(overlays.selectedProduct!.id)}
-          fmt={fmt}
-          user={user}
-        />
-      )}
+        {overlays.selectedProduct && (
+          <ProductDetail
+            product={overlays.selectedProduct}
+            cart={cart}
+            onAdd={addToCart}
+            onRemove={removeFromCart}
+            onClose={overlays.closeProduct}
+            isFav={isFavorite(overlays.selectedProduct.id)}
+            onToggleFav={() => handleToggleFavorite(overlays.selectedProduct!.id)}
+            fmt={fmt}
+            user={user}
+          />
+        )}
+      </Suspense>
 
       {toast && <div className="toast">{toast}</div>}
     </div>
