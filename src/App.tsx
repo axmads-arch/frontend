@@ -12,14 +12,6 @@ import Profile from './pages/Profile';
 import BottomNav from './components/BottomNav';
 import CartStickyBar from './components/CartStickyBar';
 
-// Kod bo'linishi (code splitting): bu 4 ta komponent faqat kerak bo'lganda
-// (mijoz tugmani bosganda) yuklanadi — boshlang'ich yuklama hajmi kichrayadi,
-// sayt tezroq ochiladi.
-const AuthSheet = lazy(() => import('./components/AuthSheet'));
-const SearchPage = lazy(() => import('./components/SearchPage'));
-const ProductDetail = lazy(() => import('./components/ProductDetail'));
-const ChatPage = lazy(() => import('./components/ChatPage'));
-
 import { useAppData } from './hooks/useAppData';
 import { useCart } from './hooks/useCart';
 import { useFavorites } from './hooks/useFavorites';
@@ -28,7 +20,11 @@ import { useToast } from './hooks/useToast';
 import { useOverlays } from './hooks/useOverlays';
 import type { TabKey, User } from './types';
 
-// Lazy komponentlar yuklanayotganda ko'rinadigan yengil "spinner" o'rnini bosuvchi
+const AuthSheet = lazy(() => import('./components/AuthSheet'));
+const SearchPage = lazy(() => import('./components/SearchPage'));
+const ProductDetail = lazy(() => import('./components/ProductDetail'));
+const ChatPage = lazy(() => import('./components/ChatPage'));
+
 function OverlayFallback() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(20,18,15,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -38,12 +34,30 @@ function OverlayFallback() {
   );
 }
 
+function DataErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', textAlign: 'center' }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>📡</div>
+      <h2 style={{ fontSize: 18, fontWeight: 900, marginBottom: 8, color: 'var(--text)' }}>Ma'lumot yuklanmadi</h2>
+      <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24, maxWidth: 280, lineHeight: 1.5 }}>
+        Internet aloqasini tekshiring va qayta urinib ko'ring.
+      </p>
+      <button
+        onClick={onRetry}
+        style={{ background: 'var(--green)', color: '#fff', border: 'none', borderRadius: 14, padding: '13px 28px', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', boxShadow: 'var(--shadow-btn)' }}
+      >
+        Qayta urinish
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
   const [tab, setTab] = useState<TabKey>('home');
   const [user, setUser] = useState<User | null>(getUser());
 
   const { toast, showToast } = useToast();
-  const { products, categories, banners, settings, loading } = useAppData();
+  const { products, categories, banners, settings, loading, error, retry } = useAppData();
   const { cart, cartCount, cartTotal, addToCart, removeFromCart, clearCart } =
     useCart(() => showToast("Savatchaga qo'shildi ✓"));
   const { favorites, isFavorite, toggle: toggleFavoriteState } = useFavorites();
@@ -67,6 +81,14 @@ export default function App() {
   };
 
   const total = cartTotal(products);
+
+  if (error && !loading) {
+    return (
+      <div className="app">
+        <DataErrorState onRetry={retry} />
+      </div>
+    );
+  }
 
   return (
     <div className="app">
