@@ -71,7 +71,7 @@ export default function Orders({ user, onAuthRequired, fmt, onReorder }: OrdersP
         <div className="page-header" style={{ background: 'var(--white)', borderBottom: '1px solid var(--border)', padding: '14px 20px', position: 'sticky', top: 0, zIndex: 40 }}>
           <span className="page-title">Buyurtmalar</span>
         </div>
-        <div className="empty-state" style={{ marginTop: 40 }}>
+        <div className="empty-state anim-in" style={{ marginTop: 40 }}>
           <div className="empty-state-icon"><LoginIcon /></div>
           <h3>Buyurtmalar tarixi</h3>
           <p>Ko'rish uchun tizimga kiring</p>
@@ -98,21 +98,21 @@ export default function Orders({ user, onAuthRequired, fmt, onReorder }: OrdersP
           ))}
         </div>
       ) : orders.length === 0 ? (
-        <div className="empty-state" style={{ marginTop: 40 }}>
+        <div className="empty-state anim-in" style={{ marginTop: 40 }}>
           <div className="empty-state-icon"><EmptyIcon /></div>
           <h3>Buyurtmalar yo'q</h3>
           <p>Hali buyurtma bermagansiz</p>
         </div>
       ) : (
         <div className="orders-list">
-          {orders.map(o => {
+          {orders.map((o, i) => {
             const st = STATUS[o.status] || { label: o.status, cls: 'st-new' };
             const date = new Date(o.createdAt).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
             const itemsText = o.items?.map(i => `${i.product?.name || 'Mahsulot'} x${i.quantity}`).join(', ') || '';
             const canReorder = !!onReorder && o.items && o.items.length > 0;
             const justReordered = reorderedId === o.id;
             return (
-              <div key={o.id} className="order-card">
+              <div key={o.id} className="order-card anim-in" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
                 <div className="order-card-head">
                   <div>
                     <div className="order-num">#{o.id}</div>
