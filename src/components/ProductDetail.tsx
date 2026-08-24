@@ -100,7 +100,7 @@ export default function ProductDetail({ product, cart, onAdd, onRemove, onClose,
   return (
     <div className="detail-overlay">
       <div className="detail-backdrop" onClick={onClose} />
-      <div className="detail-sheet">
+      <div className="detail-sheet anim-in">
         <div style={{ position: 'relative' }}>
           {product.image ? (
             <img
@@ -174,7 +174,7 @@ export default function ProductDetail({ product, cart, onAdd, onRemove, onClose,
               <>
                 <StarRating value={myStars} onChange={setMyStars} size={30} />
                 <textarea
-                  style={{ width: '100%', padding: '11px 13px', border: '1.5px solid var(--border)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', resize: 'none', minHeight: 76, background: 'var(--cream)', color: 'var(--text)', marginTop: 12, marginBottom: 8 }}
+                  style={{ width: '100%', padding: '11px 13px', border: '1.5px solid var(--border)', borderRadius: 12, fontSize: 14, fontFamily: 'inherit', outline: 'none', resize: 'none', minHeight: 76, background: 'var(--bg2)', color: 'var(--text)', marginTop: 12, marginBottom: 8 }}
                   placeholder="Izoh (ixtiyoriy)..."
                   value={myComment}
                   onChange={e => setMyComment(e.target.value)}
