@@ -27,10 +27,11 @@ interface MenuItemProps {
   action?: () => void;
   right?: React.ReactNode;
   danger?: boolean;
+  delay?: number;
 }
-function MenuItem({ icon, title, sub, action, right, danger }: MenuItemProps) {
+function MenuItem({ icon, title, sub, action, right, danger, delay = 0 }: MenuItemProps) {
   return (
-    <div className="profile-item" onClick={action}>
+    <div className="profile-item anim-in" style={{ animationDelay: `${delay}s` }} onClick={action}>
       <div className="profile-item-icon" style={danger ? { background: '#fef2f2', borderColor: '#fecaca' } : {}}>
         <Ms icon={icon} size={18} fill={1} color={danger ? '#d93025' : 'var(--text2)'} />
       </div>
@@ -56,7 +57,6 @@ interface ProfileProps {
   onToggleDark: () => void;
 }
 
-// beforeinstallprompt hodisasi rasmiy TS tiplariga ega emas — shu sabab bu yerda e'lon qilamiz
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => void;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
@@ -121,14 +121,14 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
     return (
       <div className="profile-page">
         {showIOSGuide && <IOSGuide />}
-        <div className="profile-header" style={{ textAlign: 'center' }}>
+        <div className="profile-header anim-in" style={{ textAlign: 'center' }}>
           <div className="profile-avatar" style={{ margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Ms icon="person" size={32} fill={1} color="var(--green)" />
           </div>
           <div className="profile-name">Mehmon</div>
           <div className="profile-phone">Tizimga kiring</div>
         </div>
-        <div className="profile-login">
+        <div className="profile-login anim-in" style={{ animationDelay: '.1s' }}>
           <h3>Xush kelibsiz!</h3>
           <p>Buyurtma berish uchun kiring</p>
           <button className="login-btn" onClick={onLogin} style={{ marginBottom: 16 }}>Kirish</button>
@@ -145,21 +145,21 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
   return (
     <div className="profile-page">
       {showIOSGuide && <IOSGuide />}
-      <div className="profile-header">
+      <div className="profile-header anim-in">
         <div className="profile-avatar">{initials}</div>
         <div className="profile-name">{user.name || 'Foydalanuvchi'}</div>
         <div className="profile-phone">{user.phone}</div>
       </div>
 
       {favProducts.length > 0 && (
-        <div style={{ background: 'var(--white)', borderBottom: '1px solid var(--border)', padding: '16px 20px' }}>
+        <div className="anim-in" style={{ background: 'var(--white)', borderBottom: '1px solid var(--border)', padding: '16px 20px', animationDelay: '.05s' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 12 }}>Sevimlilar</div>
           {favProducts.map(p => (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
               {p.image ? (
                 <img src={p.image} alt={p.name} style={{ width: 50, height: 50, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
               ) : (
-                <div style={{ width: 50, height: 50, borderRadius: 12, background: 'var(--cream2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🍰</div>
+                <div style={{ width: 50, height: 50, borderRadius: 12, background: 'var(--bg2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🍰</div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
@@ -178,26 +178,26 @@ export default function Profile({ user, onLogin, onLogout, settings, favorites, 
 
         {!isInstalled && (installPrompt || isIOS) && (
           <MenuItem
-            icon="download" title="Ilovani o'rnatish" sub="Telefon ekraniga qo'shish" action={handleInstall}
+            icon="download" title="Ilovani o'rnatish" sub="Telefon ekraniga qo'shish" action={handleInstall} delay={0.02}
             right={<div style={{ background: 'var(--green)', color: 'white', borderRadius: 8, padding: '4px 10px', fontSize: 12, fontWeight: 700 }}>O'rnatish</div>}
           />
         )}
 
-        <MenuItem icon="notifications" title="Bildirishnomalar" sub={notifPerm === 'granted' ? 'Yoqilgan' : "O'chirilgan"} action={handleNotif} right={<Toggle value={notifPerm === 'granted'} />} />
-        <MenuItem icon={darkMode ? 'light_mode' : 'dark_mode'} title={darkMode ? 'Kunduzgi rejim' : 'Tungi rejim'} sub={darkMode ? "Qorong'u" : "Yorug'"} action={onToggleDark} right={<Toggle value={darkMode} />} />
+        <MenuItem icon="notifications" title="Bildirishnomalar" sub={notifPerm === 'granted' ? 'Yoqilgan' : "O'chirilgan"} action={handleNotif} right={<Toggle value={notifPerm === 'granted'} />} delay={0.04} />
+        <MenuItem icon={darkMode ? 'light_mode' : 'dark_mode'} title={darkMode ? 'Kunduzgi rejim' : 'Tungi rejim'} sub={darkMode ? "Qorong'u" : "Yorug'"} action={onToggleDark} right={<Toggle value={darkMode} />} delay={0.06} />
 
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.7px', padding: '16px 0 8px' }}>Kafe</div>
 
-        <MenuItem icon="schedule" title="Ish vaqti" sub="Har kuni, doim ochiq"
+        <MenuItem icon="schedule" title="Ish vaqti" sub="Har kuni, doim ochiq" delay={0.08}
           right={<div style={{ fontSize: 12, fontWeight: 800, color: 'var(--green)', background: 'var(--green-soft)', padding: '4px 10px', borderRadius: 8 }}>24/7</div>} />
-        <MenuItem icon="location_on" title="Manzil" sub="Ko'kcha darvoza 340a, Toshkent" action={() => window.open('https://maps.google.com/?q=41.3224858,69.2091613', '_blank')} />
-        <MenuItem icon="call" title="Aloqa" sub={settings?.phone || '+998 93 272 2222'} action={() => window.open(`tel:${(settings?.phone || '+998932722222').replace(/\s/g, '')}`)} />
-        <MenuItem icon="photo_camera" title="Instagram" sub="@rahmatchef.uz" action={() => window.open('https://www.instagram.com/rahmatchef.uz', '_blank')} />
-        <MenuItem icon="send" title="Telegram kanal" sub="@rahmatchef" action={() => window.open('https://t.me/rahmatchef', '_blank')} />
-        <MenuItem icon="smart_toy" title="Telegram bot" sub="@Rahmatchef_delivery_bot" action={() => window.open('https://t.me/Rahmatchef_delivery_bot', '_blank')} />
+        <MenuItem icon="location_on" title="Manzil" sub="Ko'kcha darvoza 340a, Toshkent" action={() => window.open('https://maps.google.com/?q=41.3224858,69.2091613', '_blank')} delay={0.1} />
+        <MenuItem icon="call" title="Aloqa" sub={settings?.phone || '+998 93 272 2222'} action={() => window.open(`tel:${(settings?.phone || '+998932722222').replace(/\s/g, '')}`)} delay={0.12} />
+        <MenuItem icon="photo_camera" title="Instagram" sub="@rahmatchef.uz" action={() => window.open('https://www.instagram.com/rahmatchef.uz', '_blank')} delay={0.14} />
+        <MenuItem icon="send" title="Telegram kanal" sub="@rahmatchef" action={() => window.open('https://t.me/rahmatchef', '_blank')} delay={0.16} />
+        <MenuItem icon="smart_toy" title="Telegram bot" sub="@Rahmatchef_delivery_bot" action={() => window.open('https://t.me/Rahmatchef_delivery_bot', '_blank')} delay={0.18} />
 
         <div style={{ height: 8 }} />
-        <MenuItem icon="logout" title="Chiqish" action={onLogout} danger right={null} />
+        <MenuItem icon="logout" title="Chiqish" action={onLogout} danger right={null} delay={0.2} />
       </div>
 
       <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text3)', fontSize: 12 }}>© 2026 Rahmat Chef · v2.0</div>
