@@ -53,6 +53,10 @@ export default function Orders({ user, onAuthRequired, fmt, onReorder }: OrdersP
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
+    // BUG TUZATILDI: foydalanuvchi almashtirilganda (masalan chiqib, boshqa
+    // hisobga kirganda) eski buyurtmalar ro'yxati bir lahza ko'rinib qolmasligi
+    // uchun, yangi so'rov boshlanishidan oldin loading qayta "true" qilinadi.
+    setLoading(true);
     fetchMyOrders(user.phone)
       .then((data: Order[]) => { setOrders(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -105,14 +109,16 @@ export default function Orders({ user, onAuthRequired, fmt, onReorder }: OrdersP
         </div>
       ) : (
         <div className="orders-list">
-          {orders.map((o, i) => {
+          {orders.map((o, idx) => {
             const st = STATUS[o.status] || { label: o.status, cls: 'st-new' };
             const date = new Date(o.createdAt).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-            const itemsText = o.items?.map(i => `${i.product?.name || 'Mahsulot'} x${i.quantity}`).join(', ') || '';
+            // BUG TUZATILDI: ichki o'zgaruvchi nomi tashqi indeks (idx) bilan
+            // to'qnashmasligi uchun "item" deb nomlandi (avval ikkalasi ham "i" edi).
+            const itemsText = o.items?.map(item => `${item.product?.name || 'Mahsulot'} x${item.quantity}`).join(', ') || '';
             const canReorder = !!onReorder && o.items && o.items.length > 0;
             const justReordered = reorderedId === o.id;
             return (
-              <div key={o.id} className="order-card anim-in" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
+              <div key={o.id} className="order-card anim-in" style={{ animationDelay: `${Math.min(idx, 8) * 0.05}s` }}>
                 <div className="order-card-head">
                   <div>
                     <div className="order-num">#{o.id}</div>
